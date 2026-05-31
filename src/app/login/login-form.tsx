@@ -1,8 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+
+const AUTH_ERROR_MESSAGES: Record<string, string> = {
+  CredentialsSignin: "Invalid email or password",
+  Configuration:
+    "Login is not configured on the server. Add AUTH_SECRET to .env.local and restart npm run dev.",
+};
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,10 +20,20 @@ export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  const urlError = searchParams.get("error");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (urlError) {
+      setError(
+        AUTH_ERROR_MESSAGES[urlError] ??
+          "Sign in failed. Please check your email and password."
+      );
+    }
+  }, [urlError]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,12 +47,22 @@ export default function LoginForm() {
     });
 
     if (result?.error) {
-      setError("Invalid email or password");
+      setError(
+        AUTH_ERROR_MESSAGES[result.error] ??
+          "Invalid email or password"
+      );
       setLoading(false);
-    } else {
+      return;
+    }
+
+    if (result?.ok) {
       router.push(callbackUrl);
       router.refresh();
+      return;
     }
+
+    setError("Sign in failed. Please try again.");
+    setLoading(false);
   };
 
   return (

@@ -1,7 +1,16 @@
 import type { NextAuthConfig } from "next-auth";
 
+/** Dev fallback so local login works when .env.local is missing. */
+export function resolveAuthSecret(): string | undefined {
+  if (process.env.AUTH_SECRET) return process.env.AUTH_SECRET;
+  if (process.env.NODE_ENV === "development") {
+    return "learnstack-local-development-secret-min-32-chars";
+  }
+  return undefined;
+}
+
 export const authConfig = {
-  secret: process.env.AUTH_SECRET,
+  secret: resolveAuthSecret(),
   providers: [],
   session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   pages: {
