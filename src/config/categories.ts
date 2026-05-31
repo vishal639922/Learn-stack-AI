@@ -1,0 +1,81 @@
+export const DEFAULT_CATEGORIES = [
+  {
+    name: "Artificial Intelligence",
+    slug: "artificial-intelligence",
+    description: "AI fundamentals, agents, NLP, and intelligent systems.",
+    icon: "Brain",
+    color: "from-violet-500 to-purple-600",
+  },
+  {
+    name: "Machine Learning",
+    slug: "machine-learning",
+    description: "Supervised, unsupervised, and reinforcement learning.",
+    icon: "Cpu",
+    color: "from-blue-500 to-cyan-600",
+  },
+  {
+    name: "Deep Learning",
+    slug: "deep-learning",
+    description: "Neural networks, CNNs, RNNs, Transformers, and more.",
+    icon: "Network",
+    color: "from-indigo-500 to-blue-600",
+  },
+  {
+    name: "Data Science",
+    slug: "data-science",
+    description: "Statistics, visualization, and data engineering.",
+    icon: "BarChart3",
+    color: "from-emerald-500 to-teal-600",
+  },
+  {
+    name: "Computer Networks",
+    slug: "computer-networks",
+    description: "OSI model, TCP/IP, routing, and network security.",
+    icon: "Globe",
+    color: "from-sky-500 to-blue-600",
+  },
+  {
+    name: "Operating Systems",
+    slug: "operating-systems",
+    description: "Processes, memory, scheduling, and file systems.",
+    icon: "Monitor",
+    color: "from-orange-500 to-amber-600",
+  },
+  {
+    name: "DBMS",
+    slug: "dbms",
+    description: "SQL, NoSQL, normalization, indexing, and transactions.",
+    icon: "Database",
+    color: "from-rose-500 to-pink-600",
+  },
+  {
+    name: "Software Engineering",
+    slug: "software-engineering",
+    description: "Design patterns, SDLC, testing, and architecture.",
+    icon: "Layers",
+    color: "from-fuchsia-500 to-purple-600",
+  },
+  {
+    name: "Programming Languages",
+    slug: "programming-languages",
+    description: "Python, Java, C++, JavaScript, and language theory.",
+    icon: "Code2",
+    color: "from-lime-500 to-green-600",
+  },
+  {
+    name: "Research Papers",
+    slug: "research-papers",
+    description: "Paper summaries, breakthroughs, and research insights.",
+    icon: "FileText",
+    color: "from-slate-500 to-gray-600",
+  },
+  {
+    name: "Interview Preparation",
+    slug: "interview-preparation",
+    description: "DSA, system design, and company-specific prep.",
+    icon: "Target",
+    color: "from-red-500 to-orange-600",
+  },
+] as const;
+
+export type CategorySlug = (typeof DEFAULT_CATEGORIES)[number]["slug"];
