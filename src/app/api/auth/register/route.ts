@@ -8,7 +8,7 @@ import {
   apiError,
   withRateLimit,
 } from "@/lib/api-utils";
-import { isAdminEmail } from "@/lib/admin-role";
+import { isAdminEmail, normalizeEmail } from "@/lib/admin-role";
 
 export async function POST(request: NextRequest) {
   const rateLimitError = await withRateLimit(request, "auth");
@@ -30,17 +30,18 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
 
-    const existing = await User.findOne({ email: parsed.data.email });
+    const email = normalizeEmail(parsed.data.email);
+    const existing = await User.findOne({ email });
     if (existing) {
       return apiError("Email already registered", 409);
     }
 
     const hashedPassword = await bcrypt.hash(parsed.data.password, 12);
-    const isAdmin = isAdminEmail(parsed.data.email);
+    const isAdmin = isAdminEmail(email);
 
     const user = await User.create({
       name: parsed.data.name,
-      email: parsed.data.email,
+      email,
       password: hashedPassword,
       role: isAdmin ? "admin" : "user",
     });
