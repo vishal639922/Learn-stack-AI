@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 const AUTH_ERROR_MESSAGES: Record<string, string> = {
   CredentialsSignin: "Invalid email or password",
   Configuration:
-    "Login is not configured on the server. Add AUTH_SECRET to .env.local and restart npm run dev.",
+    "Login is not configured. Local: add AUTH_SECRET to .env.local and restart npm run dev. Vercel: Project Settings → Environment Variables → add AUTH_SECRET (openssl rand -base64 32) and AUTH_URL (your site URL), then redeploy.",
 };
 import Link from "next/link";
 import { BookOpen } from "lucide-react";

@@ -1,10 +1,26 @@
 import mongoose from "mongoose";
-import { connectDB, getDbMode, isDbConfigured } from "@/lib/mongodb";
+import {
+  connectDB,
+  getDbMode,
+  getMongoUriFromEnv,
+  isDbConfigured,
+} from "@/lib/mongodb";
 import { apiError, apiResponse } from "@/lib/api-utils";
 
 export async function GET() {
   if (!isDbConfigured()) {
-    return apiError("Database not configured. Set MONGODB_URI in .env.local", 503);
+    const hint = process.env.VERCEL
+      ? "MONGODB_URI missing on Vercel. Settings → Environment Variables → Production → redeploy."
+      : "Set MONGODB_URI in .env.local and restart npm run dev.";
+    return apiError(`Database not configured. ${hint}`, 503);
+  }
+
+  const uri = getMongoUriFromEnv();
+  if (!uri) {
+    return apiError(
+      "MONGODB_URI is empty or invalid. Use only the connection string (mongodb://...), not MONGODB_URI=...",
+      503
+    );
   }
 
   try {

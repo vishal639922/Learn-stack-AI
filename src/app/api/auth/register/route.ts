@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
-import { connectDB } from "@/lib/mongodb";
+import { connectDB, getMongoUriFromEnv, isDbConfigured } from "@/lib/mongodb";
 import { User } from "@/models/User";
 import { registerSchema } from "@/lib/validations";
 import {
@@ -19,6 +19,13 @@ export async function POST(request: NextRequest) {
     const parsed = registerSchema.safeParse(body);
     if (!parsed.success) {
       return apiError(parsed.error.issues[0].message);
+    }
+
+    if (!isDbConfigured() || !getMongoUriFromEnv()) {
+      const hint = process.env.VERCEL
+        ? "Database not configured on server. In Vercel: add MONGODB_URI (connection string only), enable Production, then Redeploy."
+        : "Add MONGODB_URI to .env.local and restart npm run dev.";
+      return apiError(hint, 503);
     }
 
     await connectDB();

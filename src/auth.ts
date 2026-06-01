@@ -8,9 +8,11 @@ import { connectDB } from "@/lib/mongodb";
 import { User } from "@/models/User";
 import { loginSchema } from "@/lib/validations";
 import { ensureAdminRole, isAdminEmail } from "@/lib/admin-role";
+import { resolveAuthSecret } from "@/auth.config";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
+  secret: resolveAuthSecret(),
   providers: [
     Credentials({
       name: "credentials",

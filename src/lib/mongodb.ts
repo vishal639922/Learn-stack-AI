@@ -20,9 +20,38 @@ const cached: MongooseCache = global.mongooseCache ?? {
 
 global.mongooseCache = cached;
 
+/** Read MONGODB_URI from env (handles quotes, whitespace, accidental key prefix). */
+export function getMongoUriFromEnv(): string | undefined {
+  const raw =
+    process.env.MONGODB_URI ??
+    process.env.DATABASE_URL ??
+    "";
+
+  let value = raw.trim();
+  if (!value) return undefined;
+
+  if (value.startsWith("MONGODB_URI=")) {
+    value = value.slice("MONGODB_URI=".length).trim();
+  }
+
+  if (
+    (value.startsWith('"') && value.endsWith('"')) ||
+    (value.startsWith("'") && value.endsWith("'"))
+  ) {
+    value = value.slice(1, -1).trim();
+  }
+
+  if (!value.startsWith("mongodb://") && !value.startsWith("mongodb+srv://")) {
+    return undefined;
+  }
+
+  return value;
+}
+
 async function resolveMongoUri(): Promise<string> {
-  if (process.env.MONGODB_URI) {
-    return process.env.MONGODB_URI;
+  const uri = getMongoUriFromEnv();
+  if (uri) {
+    return uri;
   }
 
   if (process.env.NODE_ENV === "development") {
@@ -36,17 +65,19 @@ async function resolveMongoUri(): Promise<string> {
     return global.mongoMemoryServer.getUri();
   }
 
-  throw new Error(
-    "MONGODB_URI is not set. Add it to .env.local or run in development mode."
-  );
+  const hint = process.env.VERCEL
+    ? "Add MONGODB_URI in Vercel → Settings → Environment Variables (Production), then redeploy."
+    : "Add MONGODB_URI to .env.local and restart npm run dev.";
+
+  throw new Error(`MONGODB_URI is not set. ${hint}`);
 }
 
 export function isDbConfigured(): boolean {
-  return Boolean(process.env.MONGODB_URI) || process.env.NODE_ENV === "development";
+  return Boolean(getMongoUriFromEnv()) || process.env.NODE_ENV === "development";
 }
 
 export function getDbMode(): "atlas" | "in-memory" | "unconfigured" {
-  if (process.env.MONGODB_URI) return "atlas";
+  if (getMongoUriFromEnv()) return "atlas";
   if (process.env.NODE_ENV === "development") return "in-memory";
   return "unconfigured";
 }
