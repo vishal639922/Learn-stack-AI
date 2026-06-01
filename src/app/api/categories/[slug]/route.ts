@@ -74,7 +74,7 @@ export async function PUT(
 
     await connectDB();
     const category = await Category.findOneAndUpdate({ slug }, parsed.data, {
-      new: true,
+      returnDocument: "after",
     });
 
     if (!category) {

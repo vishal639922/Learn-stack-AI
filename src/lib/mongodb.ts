@@ -45,13 +45,40 @@ export function isDbConfigured(): boolean {
   return Boolean(process.env.MONGODB_URI) || process.env.NODE_ENV === "development";
 }
 
+export function getDbMode(): "atlas" | "in-memory" | "unconfigured" {
+  if (process.env.MONGODB_URI) return "atlas";
+  if (process.env.NODE_ENV === "development") return "in-memory";
+  return "unconfigured";
+}
+
 export async function connectDB(): Promise<typeof mongoose> {
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
     cached.promise = (async () => {
       const uri = await resolveMongoUri();
-      return mongoose.connect(uri, { bufferCommands: false });
+      let conn: typeof mongoose;
+      try {
+        conn = await mongoose.connect(uri, {
+          bufferCommands: false,
+          readPreference: "primary",
+        });
+      } catch (error) {
+        cached.promise = null;
+        const message =
+          error instanceof Error ? error.message : String(error);
+        if (uri.startsWith("mongodb+srv://") && message.includes("querySrv")) {
+          throw new Error(
+            "MongoDB SRV lookup failed (common on Windows). In Atlas: Connect → Drivers → choose a standard connection string (mongodb://...), or set directConnection=true. See .env.example"
+          );
+        }
+        throw error;
+      }
+      const mode = getDbMode();
+      console.log(
+        `[mongodb] Connected (${mode === "atlas" ? "MONGODB_URI" : "in-memory dev"}) → ${conn.connection.db?.databaseName ?? "unknown"}`
+      );
+      return conn;
     })();
   }
 

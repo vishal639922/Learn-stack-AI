@@ -23,7 +23,7 @@ export async function ensureDevSeed() {
       await Category.findOneAndUpdate(
         { slug: cat.slug },
         { ...cat, articleCount: 0 },
-        { upsert: true, new: true }
+        { upsert: true, returnDocument: "after" }
       );
     }
 
@@ -108,7 +108,7 @@ model = nn.Sequential(nn.Linear(784, 128), nn.ReLU(), nn.Linear(128, 10))
           readingTime: minutes,
           views: Math.floor(Math.random() * 5000) + 100,
         },
-        { upsert: true, new: true }
+        { upsert: true, returnDocument: "after" }
       );
     }
 

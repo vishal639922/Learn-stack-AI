@@ -8,6 +8,7 @@ import {
   apiError,
   withRateLimit,
 } from "@/lib/api-utils";
+import { isAdminEmail } from "@/lib/admin-role";
 
 export async function POST(request: NextRequest) {
   const rateLimitError = await withRateLimit(request, "auth");
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     const hashedPassword = await bcrypt.hash(parsed.data.password, 12);
-    const isAdmin = parsed.data.email === process.env.ADMIN_EMAIL;
+    const isAdmin = isAdminEmail(parsed.data.email);
 
     const user = await User.create({
       name: parsed.data.name,

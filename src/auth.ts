@@ -7,6 +7,7 @@ import { authConfig } from "@/auth.config";
 import { connectDB } from "@/lib/mongodb";
 import { User } from "@/models/User";
 import { loginSchema } from "@/lib/validations";
+import { ensureAdminRole, isAdminEmail } from "@/lib/admin-role";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -33,11 +34,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         );
         if (!isValid) return null;
 
+        const role = await ensureAdminRole(user);
+
         return {
           id: user._id.toString(),
           name: user.name,
           email: user.email,
-          role: user.role,
+          role,
           image: user.avatar,
           isPremium: user.isPremium,
         };
@@ -73,9 +76,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name || "User",
           email: user.email,
           avatar: user.image ?? undefined,
-          role:
-            user.email === process.env.ADMIN_EMAIL ? "admin" : "user",
+          role: isAdminEmail(user.email) ? "admin" : "user",
         });
+      } else {
+        await ensureAdminRole(existingUser);
       }
       return true;
     },

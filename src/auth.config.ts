@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
+import { isAdminEmail } from "@/lib/admin-role";
 
 /** Dev fallback so local login works when .env.local is missing. */
 export function resolveAuthSecret(): string | undefined {
@@ -21,8 +22,13 @@ export const authConfig = {
     async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id!;
+        token.email = user.email;
         token.role = user.role || "user";
         token.isPremium = user.isPremium || false;
+      }
+
+      if (token.email && isAdminEmail(token.email as string)) {
+        token.role = "admin";
       }
 
       if (trigger === "update" && session) {

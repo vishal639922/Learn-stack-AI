@@ -44,11 +44,15 @@ export default function RegisterForm() {
       });
 
       if (result?.error) {
-        router.push("/login");
-      } else {
-        router.push("/dashboard");
-        router.refresh();
+        setError(
+          "Account created but sign-in failed. Please sign in on the login page."
+        );
+        setLoading(false);
+        return;
       }
+
+      router.push("/dashboard");
+      router.refresh();
     } catch {
       setError("Something went wrong");
       setLoading(false);

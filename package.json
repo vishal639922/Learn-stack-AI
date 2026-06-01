@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed": "curl -X POST http://localhost:3000/api/seed -H \"x-seed-secret: %AUTH_SECRET%\""
+    "seed": "curl -X POST http://localhost:3000/api/seed -H \"x-seed-secret: %AUTH_SECRET%\"",
+    "db:check": "curl -s http://localhost:3000/api/health/db"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
