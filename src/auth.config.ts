@@ -22,7 +22,7 @@ export const authConfig = {
     async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id!;
-        token.email = user.email;
+        token.email = user.email ?? undefined;
         token.role = user.role || "user";
         token.isPremium = user.isPremium || false;
       }
