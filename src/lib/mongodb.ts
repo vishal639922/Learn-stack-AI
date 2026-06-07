@@ -45,6 +45,17 @@ export function isDbConfigured(): boolean {
   return Boolean(process.env.MONGODB_URI) || process.env.NODE_ENV === "development";
 }
 
+export function getDbMode(): string {
+  if (process.env.MONGODB_URI) return "mongodb";
+  if (process.env.NODE_ENV === "development") return "memory";
+  return "unconfigured";
+}
+
+export function getMongoUriFromEnv(): string | null {
+  return process.env.MONGODB_URI?.trim() || null;
+}
+
+
 export async function connectDB(): Promise<typeof mongoose> {
   if (cached.conn) return cached.conn;
 

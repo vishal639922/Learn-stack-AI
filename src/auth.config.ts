@@ -9,6 +9,13 @@ export function resolveAuthSecret(): string | undefined {
   return undefined;
 }
 
+
+export function isAuthConfigured(): boolean {
+  return Boolean(resolveAuthSecret());
+}
+
+
+
 export const authConfig = {
   secret: resolveAuthSecret(),
   providers: [],
