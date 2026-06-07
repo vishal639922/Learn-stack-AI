@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { siteConfig } from "@/config/site";
 import { generateSEO } from "@/lib/seo";
+import { getSiteTheme, themeToCssVars } from "@/lib/site-theme";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,13 +24,18 @@ export const metadata: Metadata = generateSEO({
   description: siteConfig.description,
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const theme = await getSiteTheme();
+
   return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${jetbrains.variable} h-full`}>
+    <html lang="hi" suppressHydrationWarning className={`${inter.variable} ${jetbrains.variable} h-full`}>
+      <head>
+        <style dangerouslySetInnerHTML={{ __html: themeToCssVars(theme) }} />
+      </head>
       <body className="min-h-full flex flex-col antialiased">
         <ThemeProvider
           attribute="class"

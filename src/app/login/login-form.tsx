@@ -5,9 +5,9 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 const AUTH_ERROR_MESSAGES: Record<string, string> = {
-  CredentialsSignin: "Invalid email or password",
+  CredentialsSignin: "Galat email ya password",
   Configuration:
-    "Login is not configured. Local: add AUTH_SECRET to .env.local and restart npm run dev. Vercel: Project Settings → Environment Variables → add AUTH_SECRET (openssl rand -base64 32) and AUTH_URL (your site URL), then redeploy.",
+    "Server par login configure nahi hai. .env.local mein AUTH_SECRET add karo aur npm run dev restart karo.",
 };
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
@@ -21,6 +21,8 @@ export default function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const urlError = searchParams.get("error");
+  const resetSuccess = searchParams.get("reset") === "success";
+  const isAdminLogin = callbackUrl.includes("/admin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -30,10 +32,14 @@ export default function LoginForm() {
     if (urlError) {
       setError(
         AUTH_ERROR_MESSAGES[urlError] ??
-          "Sign in failed. Please check your email and password."
+          "Sign in fail ho gaya. Email aur password check karo."
       );
     }
   }, [urlError]);
+
+  const forgotPasswordHref = isAdminLogin
+    ? "/admin/forgot-password"
+    : "/forgot-password";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +55,7 @@ export default function LoginForm() {
     if (result?.error) {
       setError(
         AUTH_ERROR_MESSAGES[result.error] ??
-          "Invalid email or password"
+          "Galat email ya password"
       );
       setLoading(false);
       return;
@@ -61,7 +67,7 @@ export default function LoginForm() {
       return;
     }
 
-    setError("Sign in failed. Please try again.");
+    setError("Sign in fail ho gaya. Phir se try karo.");
     setLoading(false);
   };
 
@@ -70,11 +76,16 @@ export default function LoginForm() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <BookOpen className="h-10 w-10 text-primary mx-auto mb-2" />
-          <CardTitle className="text-2xl">Welcome Back</CardTitle>
-          <CardDescription>Sign in to your account</CardDescription>
+          <CardTitle className="text-2xl">Wapas Aao</CardTitle>
+          <CardDescription>Apne account mein sign in karo</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {resetSuccess && (
+              <div className="p-3 text-sm text-green-700 bg-green-50 dark:bg-green-950/30 dark:text-green-400 rounded-md">
+                Password update ho gaya. Ab sign in karo.
+              </div>
+            )}
             {error && (
               <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
                 {error}
@@ -91,7 +102,15 @@ export default function LoginForm() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <Link
+                  href={forgotPasswordHref}
+                  className="text-xs text-primary hover:underline"
+                >
+                  Password bhool gaye?
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"
@@ -101,13 +120,13 @@ export default function LoginForm() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? "Sign in ho raha hai..." : "Sign In"}
             </Button>
           </form>
           <p className="text-center text-sm text-muted-foreground mt-6">
-            Don&apos;t have an account?{" "}
+            Account nahi hai?{" "}
             <Link href="/register" className="text-primary hover:underline">
-              Sign up
+              Sign up karo
             </Link>
           </p>
         </CardContent>

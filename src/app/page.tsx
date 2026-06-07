@@ -43,26 +43,26 @@ export default async function HomePage() {
         <div className="container mx-auto px-4 text-center max-w-4xl">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
             <Sparkles className="h-4 w-4" />
-            Learn AI, ML, CS & Engineering
+            AI, ML, CS & Engineering seekho
           </div>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
-            Master{" "}
             <span className="gradient-text">Artificial Intelligence</span>
-            <br />& Computer Science
+            <br />
+            aur Computer Science master karo
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Expert tutorials, research paper explanations, interview prep, and
-            engineering notes — built for learners and professionals.
+            Expert tutorials, research paper explanations, interview prep aur
+            engineering notes — learners aur professionals ke liye.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/articles">
               <Button size="lg" className="gap-2">
-                Explore Articles <ArrowRight className="h-4 w-4" />
+                Articles Explore Karo <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
             <Link href="/categories">
               <Button size="lg" variant="outline" className="gap-2">
-                <BookOpen className="h-4 w-4" /> Browse Categories
+                <BookOpen className="h-4 w-4" /> Categories Browse Karo
               </Button>
             </Link>
           </div>
@@ -72,9 +72,9 @@ export default async function HomePage() {
       {/* Categories */}
       <section className="py-16 container mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold">Explore Categories</h2>
+          <h2 className="text-2xl md:text-3xl font-bold">Categories Explore Karo</h2>
           <Link href="/categories" className="text-primary text-sm font-medium hover:underline">
-            View all →
+            Saare dekho →
           </Link>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -123,7 +123,7 @@ export default async function HomePage() {
           <div>
             <div className="flex items-center gap-2 mb-6">
               <TrendingUp className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-bold">Trending Now</h2>
+              <h2 className="text-xl font-bold">Ab Trending</h2>
             </div>
             <div className="space-y-1">
               {trending.length > 0 ? (
@@ -131,7 +131,7 @@ export default async function HomePage() {
                   <ArticleCard key={article._id} article={article} variant="compact" />
                 ))
               ) : (
-                <p className="text-muted-foreground text-sm">No articles yet. Seed the database to get started.</p>
+                <p className="text-muted-foreground text-sm">Abhi koi article nahi hai.</p>
               )}
             </div>
           </div>
@@ -147,7 +147,7 @@ export default async function HomePage() {
                   <ArticleCard key={article._id} article={article} />
                 ))
               ) : (
-                <p className="text-muted-foreground text-sm">No articles yet.</p>
+                <p className="text-muted-foreground text-sm">Abhi koi article nahi hai.</p>
               )}
             </div>
           </div>

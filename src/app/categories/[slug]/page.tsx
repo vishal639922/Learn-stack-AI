@@ -110,7 +110,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
         </>
       ) : (
         <p className="text-muted-foreground text-center py-16">
-          No articles in this category yet.
+          Is category mein abhi koi article nahi hai.
         </p>
       )}
     </div>

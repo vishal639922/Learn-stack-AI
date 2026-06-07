@@ -9,7 +9,7 @@ export const revalidate = 3600;
 
 export const metadata = generateSEO({
   title: "Categories",
-  description: "Explore articles by category — AI, ML, Deep Learning, CS, and more.",
+  description: "Category ke hisaab se articles explore karo — AI, ML, Deep Learning, CS aur bahut kuch.",
   slug: "/categories",
 });
 
@@ -25,7 +25,7 @@ export default async function CategoriesPage() {
       <Breadcrumbs items={[{ label: "Categories" }]} />
       <h1 className="text-3xl font-bold mb-2">Categories</h1>
       <p className="text-muted-foreground mb-8">
-        Browse content organized by topic
+        Topic ke hisaab se content browse karo
       </p>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

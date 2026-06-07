@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
   const rateLimitError = await withRateLimit(request);
   if (rateLimitError) return rateLimitError;
 
-  const { error } = await withAuth(["admin"]);
+  const { error } = await withAuth(["admin", "subadmin"]);
   if (error) return error;
 
   try {

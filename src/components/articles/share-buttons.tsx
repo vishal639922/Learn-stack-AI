@@ -43,7 +43,7 @@ export function ShareButtons({ title, slug }: ShareButtonsProps) {
           href={link.href}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label={`Share on ${link.name}`}
+          aria-label={`${link.name} par share karo`}
         >
           <Button variant="outline" size="icon" className="h-8 w-8">
             <link.icon className="h-4 w-4" />

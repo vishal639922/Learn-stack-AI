@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { siteConfig } from "@/config/site";
+import { canAccessAdminPanel } from "@/lib/roles";
 import { useRouter } from "next/navigation";
 
 export function Header() {
@@ -63,7 +64,7 @@ export function Header() {
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search tutorials, notes, papers..."
+              placeholder="Tutorials, notes, papers search karo..."
               className="pl-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -82,7 +83,7 @@ export function Header() {
                   Dashboard
                 </Button>
               </Link>
-              {(session.user.role === "admin" || session.user.role === "editor") && (
+              {canAccessAdminPanel(session.user.role) && (
                 <Link href="/admin">
                   <Button variant="ghost" size="sm">
                     <Shield className="h-4 w-4 mr-1" />
@@ -122,7 +123,7 @@ export function Header() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search..."
+                placeholder="Search karo..."
                 className="pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -137,7 +138,7 @@ export function Header() {
               ...(session
                 ? [
                     { href: "/dashboard", label: "Dashboard" },
-                    ...(session.user.role === "admin" || session.user.role === "editor"
+                    ...(canAccessAdminPanel(session.user.role)
                       ? [{ href: "/admin", label: "Admin Panel" }]
                       : []),
                   ]
@@ -160,7 +161,7 @@ export function Header() {
                 onClick={() => signOut()}
                 className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent text-left flex items-center gap-2"
               >
-                <User className="h-4 w-4" /> Sign Out
+                <User className="h-4 w-4" /> Sign Out Karo
               </button>
             )}
           </nav>

@@ -32,7 +32,7 @@ export default function RegisterForm() {
       const data = await res.json();
 
       if (!data.success) {
-        setError(data.error || "Registration failed");
+        setError(data.error || "Registration fail ho gaya");
         setLoading(false);
         return;
       }
@@ -45,7 +45,7 @@ export default function RegisterForm() {
 
       if (result?.error) {
         setError(
-          "Account created but sign-in failed. Please sign in on the login page."
+          "Account ban gaya par sign-in fail ho gaya. Login page se sign in karo."
         );
         setLoading(false);
         return;
@@ -54,7 +54,7 @@ export default function RegisterForm() {
       router.push("/dashboard");
       router.refresh();
     } catch {
-      setError("Something went wrong");
+      setError("Kuch galat ho gaya");
       setLoading(false);
     }
   };
@@ -64,8 +64,8 @@ export default function RegisterForm() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <BookOpen className="h-10 w-10 text-primary mx-auto mb-2" />
-          <CardTitle className="text-2xl">Create Account</CardTitle>
-          <CardDescription>Join the learning community</CardDescription>
+          <CardTitle className="text-2xl">Account Banao</CardTitle>
+          <CardDescription>Learning community join karo</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -75,7 +75,7 @@ export default function RegisterForm() {
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name">Poora Naam</Label>
               <Input
                 id="name"
                 value={name}
@@ -104,17 +104,17 @@ export default function RegisterForm() {
                 minLength={8}
               />
               <p className="text-xs text-muted-foreground">
-                Min 8 chars, uppercase letter, and number required
+                Kam se kam 8 characters, ek uppercase letter aur ek number chahiye
               </p>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Creating account..." : "Create Account"}
+              {loading ? "Account ban raha hai..." : "Account Banao"}
             </Button>
           </form>
           <p className="text-center text-sm text-muted-foreground mt-6">
-            Already have an account?{" "}
+            Pehle se account hai?{" "}
             <Link href="/login" className="text-primary hover:underline">
-              Sign in
+              Sign in karo
             </Link>
           </p>
         </CardContent>

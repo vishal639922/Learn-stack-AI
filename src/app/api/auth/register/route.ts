@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
-import { connectDB, getMongoUriFromEnv, isDbConfigured } from "@/lib/mongodb";
+import { connectDB } from "@/lib/mongodb";
 import { User } from "@/models/User";
 import { registerSchema } from "@/lib/validations";
 import {
@@ -8,7 +8,6 @@ import {
   apiError,
   withRateLimit,
 } from "@/lib/api-utils";
-import { isAdminEmail, normalizeEmail } from "@/lib/admin-role";
 
 export async function POST(request: NextRequest) {
   const rateLimitError = await withRateLimit(request, "auth");
@@ -21,27 +20,19 @@ export async function POST(request: NextRequest) {
       return apiError(parsed.error.issues[0].message);
     }
 
-    if (!isDbConfigured() || !getMongoUriFromEnv()) {
-      const hint = process.env.VERCEL
-        ? "Database not configured on server. In Vercel: add MONGODB_URI (connection string only), enable Production, then Redeploy."
-        : "Add MONGODB_URI to .env.local and restart npm run dev.";
-      return apiError(hint, 503);
-    }
-
     await connectDB();
 
-    const email = normalizeEmail(parsed.data.email);
-    const existing = await User.findOne({ email });
+    const existing = await User.findOne({ email: parsed.data.email });
     if (existing) {
-      return apiError("Email already registered", 409);
+      return apiError("Ye email pehle se registered hai", 409);
     }
 
     const hashedPassword = await bcrypt.hash(parsed.data.password, 12);
-    const isAdmin = isAdminEmail(email);
+    const isAdmin = parsed.data.email === process.env.ADMIN_EMAIL;
 
     const user = await User.create({
       name: parsed.data.name,
-      email,
+      email: parsed.data.email,
       password: hashedPassword,
       role: isAdmin ? "admin" : "user",
     });
@@ -58,7 +49,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Registration failed:", error);
     const message =
-      error instanceof Error ? error.message : "Registration failed";
+      error instanceof Error ? error.message : "Registration fail ho gaya";
     return apiError(message, 500);
   }
 }

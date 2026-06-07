@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { rateLimit } from "@/lib/rate-limit";
+import type { UserRole } from "@/lib/roles";
 
 export function apiResponse<T>(data: T, status = 200) {
   return NextResponse.json({ success: true, data }, { status });
@@ -11,13 +12,13 @@ export function apiError(message: string, status = 400) {
 }
 
 export async function withAuth(
-  roles: ("user" | "admin" | "editor")[] = ["user", "admin", "editor"]
+  roles: UserRole[] = ["user", "admin", "subadmin", "editor", "author"]
 ) {
   const session = await auth();
   if (!session?.user) {
     return { session: null, error: apiError("Unauthorized", 401) };
   }
-  if (!roles.includes(session.user.role as "user" | "admin" | "editor")) {
+  if (!roles.includes(session.user.role as UserRole)) {
     return { session: null, error: apiError("Forbidden", 403) };
   }
   return { session, error: null };

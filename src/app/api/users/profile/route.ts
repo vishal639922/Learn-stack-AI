@@ -61,7 +61,7 @@ export async function PATCH(request: NextRequest) {
     const user = await User.findByIdAndUpdate(
       session!.user.id,
       { ...(name && { name }), ...(avatar && { avatar }) },
-      { returnDocument: "after" }
+      { new: true }
     ).select("-password");
 
     return apiResponse(user);

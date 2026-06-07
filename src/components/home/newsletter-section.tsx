@@ -36,35 +36,35 @@ export function NewsletterSection() {
       <div className="container mx-auto px-4 text-center max-w-2xl">
         <Mail className="h-10 w-10 text-primary mx-auto mb-4" />
         <h2 className="text-2xl md:text-3xl font-bold mb-3">
-          Stay Ahead in AI & Tech
+          AI & Tech mein aage raho
         </h2>
         <p className="text-muted-foreground mb-6">
-          Get weekly tutorials, research paper summaries, and interview prep delivered to your inbox.
+          Har hafte tutorials, research paper summaries aur interview prep seedha apke inbox mein.
         </p>
 
         {status === "success" ? (
           <div className="flex items-center justify-center gap-2 text-primary">
             <CheckCircle className="h-5 w-5" />
-            <span>Thanks for subscribing!</span>
+            <span>Subscribe karne ke liye dhanyavaad!</span>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
             <Input
               type="email"
-              placeholder="Enter your email"
+              placeholder="Apna email daalo"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               className="flex-1"
             />
             <Button type="submit" disabled={status === "loading"}>
-              {status === "loading" ? "Subscribing..." : "Subscribe"}
+              {status === "loading" ? "Subscribe ho raha hai..." : "Subscribe"}
             </Button>
           </form>
         )}
 
         {status === "error" && (
-          <p className="text-destructive text-sm mt-2">Something went wrong. Please try again.</p>
+          <p className="text-destructive text-sm mt-2">Kuch galat ho gaya. Phir se try karo.</p>
         )}
       </div>
     </section>

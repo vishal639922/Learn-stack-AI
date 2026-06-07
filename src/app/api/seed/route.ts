@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       await Category.findOneAndUpdate(
         { slug: cat.slug },
         { ...cat, articleCount: 0 },
-        { upsert: true, returnDocument: "after" }
+        { upsert: true, new: true }
       );
     }
 
@@ -140,7 +140,7 @@ class SimpleNN(nn.Module):
         await Article.findOneAndUpdate(
           { slug: article.slug },
           { ...article, readingTime: minutes, views: Math.floor(Math.random() * 5000) + 100 },
-          { upsert: true, returnDocument: "after" }
+          { upsert: true, new: true }
         );
       }
 

@@ -71,7 +71,7 @@ export function SearchClient() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search articles, tags, topics..."
+            placeholder="Articles, tags, topics search karo..."
             className="pl-10"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -82,7 +82,7 @@ export function SearchClient() {
           onChange={(e) => setCategory(e.target.value)}
           className="h-10 rounded-md border border-input bg-background px-3 text-sm"
         >
-          <option value="">All Categories</option>
+          <option value="">Saari Categories</option>
           {DEFAULT_CATEGORIES.map((cat) => (
             <option key={cat.slug} value={cat.slug}>
               {cat.name}
@@ -96,11 +96,11 @@ export function SearchClient() {
       </form>
 
       {loading ? (
-        <p className="text-muted-foreground text-center py-12">Searching...</p>
+        <p className="text-muted-foreground text-center py-12">Search ho raha hai...</p>
       ) : articles.length > 0 ? (
         <>
           <p className="text-sm text-muted-foreground mb-6">
-            {total} result{total !== 1 ? "s" : ""} found
+            {total} result{total !== 1 ? "s" : ""} mile
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {articles.map((article) => (
@@ -110,11 +110,11 @@ export function SearchClient() {
         </>
       ) : query || category ? (
         <p className="text-muted-foreground text-center py-12">
-          No results found. Try different keywords.
+          Koi result nahi mila. Alag keywords try karo.
         </p>
       ) : (
         <p className="text-muted-foreground text-center py-12">
-          Enter a search term to find articles.
+          Articles dhundhne ke liye kuch search karo.
         </p>
       )}
     </div>

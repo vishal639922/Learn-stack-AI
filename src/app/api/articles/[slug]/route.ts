@@ -59,7 +59,7 @@ export async function PUT(
   const rateLimitError = await withRateLimit(request);
   if (rateLimitError) return rateLimitError;
 
-  const { session, error } = await withAuth(["admin", "editor"]);
+  const { session, error } = await withAuth(["admin", "subadmin", "editor"]);
   if (error) return error;
 
   try {
@@ -83,7 +83,10 @@ export async function PUT(
     const updates: Record<string, unknown> = { ...parsed.data, updatedDate: new Date() };
 
     if (parsed.data.content) {
-      const { minutes } = calculateReadingTime(parsed.data.content);
+      const { minutes } = calculateReadingTime(
+        parsed.data.content,
+        parsed.data.contentFormat
+      );
       updates.readingTime = minutes;
     }
 

@@ -1,15 +1,15 @@
 export const siteConfig = {
-  name: process.env.NEXT_PUBLIC_SITE_NAME || "LearnStack AI",
+  name: process.env.NEXT_PUBLIC_SITE_NAME || "HingLearn",
   description:
-    "Master AI, Machine Learning, Deep Learning, Computer Science, Research Papers, and Programming with expert tutorials, notes, and interview prep.",
+    "AI, Machine Learning, Deep Learning, Computer Science, Research Papers aur Programming ko expert tutorials, notes aur interview prep se seekho.",
   url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
   ogImage: "/og-default.png",
   links: {
-    twitter: "https://twitter.com/learnstackai",
-    github: "https://github.com/learnstackai",
-    linkedin: "https://linkedin.com/company/learnstackai",
+    twitter: "https://twitter.com/hinglearn",
+    github: "https://github.com/hinglearn",
+    linkedin: "https://linkedin.com/company/hinglearn",
   },
-  creator: "LearnStack AI Team",
+  creator: "HingLearn Team",
 } as const;
 
 export type SiteConfig = typeof siteConfig;

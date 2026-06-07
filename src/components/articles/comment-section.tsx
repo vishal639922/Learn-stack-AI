@@ -60,19 +60,19 @@ export function CommentSection({
       {isLoggedIn ? (
         <form onSubmit={handleSubmit} className="mb-8 space-y-3">
           <Textarea
-            placeholder="Share your thoughts..."
+            placeholder="Apne thoughts share karo..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={3}
           />
           <Button type="submit" disabled={loading || !content.trim()}>
             <Send className="h-4 w-4 mr-2" />
-            Post Comment
+            Comment Post Karo
           </Button>
         </form>
       ) : (
         <p className="text-muted-foreground mb-8 p-4 bg-muted rounded-lg">
-          Please <a href="/login" className="text-primary underline">login</a> to leave a comment.
+          Comment karne ke liye please <a href="/login" className="text-primary underline">login</a> karo.
         </p>
       )}
 

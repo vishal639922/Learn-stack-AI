@@ -61,7 +61,7 @@ export async function PUT(
   const rateLimitError = await withRateLimit(request);
   if (rateLimitError) return rateLimitError;
 
-  const { error } = await withAuth(["admin"]);
+  const { error } = await withAuth(["admin", "subadmin"]);
   if (error) return error;
 
   try {
@@ -74,7 +74,7 @@ export async function PUT(
 
     await connectDB();
     const category = await Category.findOneAndUpdate({ slug }, parsed.data, {
-      returnDocument: "after",
+      new: true,
     });
 
     if (!category) {
@@ -94,7 +94,7 @@ export async function DELETE(
   const rateLimitError = await withRateLimit(request);
   if (rateLimitError) return rateLimitError;
 
-  const { error } = await withAuth(["admin"]);
+  const { error } = await withAuth(["admin", "subadmin"]);
   if (error) return error;
 
   try {

@@ -8,8 +8,8 @@ import type { ArticleCardData } from "@/components/articles/article-card";
 export const revalidate = 3600;
 
 export const metadata = generateSEO({
-  title: "All Articles",
-  description: "Browse all tutorials, notes, and research paper explanations.",
+  title: "Saare Articles",
+  description: "Saare tutorials, notes aur research paper explanations browse karo.",
   slug: "/articles",
 });
 
@@ -40,9 +40,9 @@ export default async function ArticlesPage({ searchParams }: PageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <Breadcrumbs items={[{ label: "Articles" }]} />
-      <h1 className="text-3xl font-bold mb-2">All Articles</h1>
+      <h1 className="text-3xl font-bold mb-2">Saare Articles</h1>
       <p className="text-muted-foreground mb-8">
-        {total} articles published
+        {total} articles publish hue
       </p>
 
       {articles.length > 0 ? (
@@ -73,10 +73,7 @@ export default async function ArticlesPage({ searchParams }: PageProps) {
         </>
       ) : (
         <div className="text-center py-16 text-muted-foreground">
-          <p>No articles published yet.</p>
-          <p className="text-sm mt-2">
-            Run the seed API to populate sample content.
-          </p>
+          <p>Abhi tak koi article publish nahi hua.</p>
         </div>
       )}
     </div>

@@ -51,7 +51,7 @@ export function generateSEO({
       title,
       description,
       images: [ogImage],
-      creator: "@learnstackai",
+      creator: "@hinglearn",
     },
     robots: noIndex
       ? { index: false, follow: false }

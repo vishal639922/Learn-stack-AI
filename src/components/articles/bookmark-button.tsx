@@ -38,7 +38,7 @@ export function BookmarkButton({ articleId }: BookmarkButtonProps) {
       className={bookmarked ? "text-primary border-primary" : ""}
     >
       <Bookmark className={`h-4 w-4 mr-1 ${bookmarked ? "fill-current" : ""}`} />
-      {bookmarked ? "Saved" : "Save"}
+      {bookmarked ? "Saved" : "Save Karo"}
     </Button>
   );
 }

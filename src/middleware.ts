@@ -1,11 +1,8 @@
 import NextAuth from "next-auth";
-import { authConfig, resolveAuthSecret } from "@/auth.config";
+import { authConfig } from "@/auth.config";
 import { NextResponse } from "next/server";
 
-const { auth } = NextAuth({
-  ...authConfig,
-  secret: resolveAuthSecret(),
-});
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
@@ -13,10 +10,14 @@ export default auth((req) => {
   const role = req.auth?.user?.role;
 
   if (pathname.startsWith("/admin")) {
+    if (pathname === "/admin/forgot-password") {
+      return NextResponse.next();
+    }
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL("/login?callbackUrl=/admin", req.url));
     }
-    if (role !== "admin" && role !== "editor") {
+    const staffRoles = ["admin", "subadmin", "editor", "author"];
+    if (!role || !staffRoles.includes(role)) {
       return NextResponse.redirect(new URL("/", req.url));
     }
   }

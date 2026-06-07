@@ -5,6 +5,7 @@ export interface IArticle extends Document {
   slug: string;
   excerpt: string;
   content: string;
+  contentFormat: "markdown" | "richtext";
   featuredImage?: string;
   featuredImagePublicId?: string;
   category: mongoose.Types.ObjectId;
@@ -30,6 +31,11 @@ const ArticleSchema = new Schema<IArticle>(
     slug: { type: String, required: true, unique: true, lowercase: true },
     excerpt: { type: String, required: true, maxlength: 500 },
     content: { type: String, required: true },
+    contentFormat: {
+      type: String,
+      enum: ["markdown", "richtext"],
+      default: "markdown",
+    },
     featuredImage: { type: String },
     featuredImagePublicId: { type: String },
     category: { type: Schema.Types.ObjectId, ref: "Category", required: true },

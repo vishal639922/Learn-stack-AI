@@ -1,9 +1,10 @@
 import RegisterForm from "./register-form";
 import { generateSEO } from "@/lib/seo";
+import { siteConfig } from "@/config/site";
 
 export const metadata = generateSEO({
   title: "Register",
-  description: "Create your LearnStack AI account.",
+  description: `Apna ${siteConfig.name} account banao.`,
   slug: "/register",
   noIndex: true,
 });

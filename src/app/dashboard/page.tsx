@@ -12,7 +12,7 @@ import { generateSEO } from "@/lib/seo";
 
 export const metadata = generateSEO({
   title: "Dashboard",
-  description: "Your personal learning dashboard.",
+  description: "Aapka personal learning dashboard.",
   slug: "/dashboard",
   noIndex: true,
 });
@@ -87,9 +87,9 @@ export default async function DashboardPage() {
             </div>
           ) : (
             <p className="text-muted-foreground text-center py-12">
-              No saved articles yet.{" "}
+              Abhi tak koi article save nahi kiya.{" "}
               <Link href="/articles" className="text-primary hover:underline">
-                Browse articles
+                Articles browse karo
               </Link>
             </p>
           )}
@@ -104,7 +104,7 @@ export default async function DashboardPage() {
             </div>
           ) : (
             <p className="text-muted-foreground text-center py-12">
-              No reading history yet.
+              Abhi tak koi reading history nahi hai.
             </p>
           )}
         </TabsContent>
@@ -112,7 +112,7 @@ export default async function DashboardPage() {
         <TabsContent value="profile" className="mt-6">
           <div className="max-w-md space-y-4 p-6 border rounded-lg">
             <div>
-              <label className="text-sm text-muted-foreground">Name</label>
+              <label className="text-sm text-muted-foreground">Naam</label>
               <p className="font-medium">{user.name}</p>
             </div>
             <div>
@@ -120,7 +120,7 @@ export default async function DashboardPage() {
               <p className="font-medium">{user.email}</p>
             </div>
             <div>
-              <label className="text-sm text-muted-foreground">Member since</label>
+              <label className="text-sm text-muted-foreground">Member kab se</label>
               <p className="font-medium">
                 {new Date(user.createdAt).toLocaleDateString()}
               </p>

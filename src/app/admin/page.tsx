@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import {
   LayoutDashboard,
   FileText,
@@ -11,11 +12,22 @@ import {
   BarChart3,
   Eye,
   TrendingUp,
+  Palette,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArticleEditor } from "@/components/admin/article-editor";
+import { CategoryManager } from "@/components/admin/category-manager";
+import { UserManager } from "@/components/admin/user-manager";
+import { ThemeSettings } from "@/components/admin/theme-settings";
+import {
+  canManageCategories,
+  canManageUsers,
+  canManageTheme,
+  canCreateArticles,
+  canViewAnalytics,
+} from "@/lib/roles";
 
 interface Analytics {
   overview: {
@@ -29,30 +41,36 @@ interface Analytics {
     totalViews: number;
   };
   topArticles: { title: string; slug: string; views: number }[];
-  recentUsers: { name: string; email: string; role: string; createdAt: string }[];
 }
 
 export default function AdminPage() {
+  const { data: session, status } = useSession();
+  const role = session?.user?.role || "";
+
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
-  const [users, setUsers] = useState<Analytics["recentUsers"]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/admin/analytics").then((r) => r.json()),
-      fetch("/api/admin/users").then((r) => r.json()),
-    ]).then(([analyticsRes, usersRes]) => {
-      if (analyticsRes.success) setAnalytics(analyticsRes.data);
-      if (usersRes.success) setUsers(usersRes.data.users);
-      setLoading(false);
-    });
-  }, []);
+    if (status === "loading") return;
 
-  if (loading) {
+    if (canViewAnalytics(role)) {
+      fetch("/api/admin/analytics")
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.success) setAnalytics(data.data);
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
+      if (canCreateArticles(role)) setActiveTab("create");
+    }
+  }, [role, status]);
+
+  if (status === "loading" || loading) {
     return (
       <div className="container mx-auto px-4 py-16 text-center text-muted-foreground">
-        Loading admin panel...
+        Admin panel load ho raha hai...
       </div>
     );
   }
@@ -64,14 +82,21 @@ export default function AdminPage() {
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <LayoutDashboard className="h-8 w-8 text-primary" />
-          <h1 className="text-2xl font-bold">Admin Panel</h1>
+          <div>
+            <h1 className="text-2xl font-bold">Admin Panel</h1>
+            {role && (
+              <p className="text-xs text-muted-foreground capitalize">{role} account</p>
+            )}
+          </div>
         </div>
-        <Button onClick={() => setActiveTab("create")}>
-          <Plus className="h-4 w-4 mr-2" /> New Article
-        </Button>
+        {canCreateArticles(role) && (
+          <Button onClick={() => setActiveTab("create")}>
+            <Plus className="h-4 w-4 mr-2" /> Naya Article
+          </Button>
+        )}
       </div>
 
-      {stats && (
+      {stats && canViewAnalytics(role) && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
             { label: "Total Users", value: stats.totalUsers, icon: Users },
@@ -93,83 +118,92 @@ export default function AdminPage() {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="create">Create Article</TabsTrigger>
-          <TabsTrigger value="users">Users</TabsTrigger>
+        <TabsList className="flex flex-wrap h-auto gap-1">
+          {canViewAnalytics(role) && (
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+          )}
+          {canCreateArticles(role) && (
+            <TabsTrigger value="create">Article Banao</TabsTrigger>
+          )}
+          {canManageCategories(role) && (
+            <TabsTrigger value="categories">Categories</TabsTrigger>
+          )}
+          {canManageUsers(role) && (
+            <TabsTrigger value="users">Users</TabsTrigger>
+          )}
+          {canManageTheme(role) && (
+            <TabsTrigger value="appearance">Appearance</TabsTrigger>
+          )}
         </TabsList>
 
-        <TabsContent value="overview" className="mt-6">
-          <div className="grid md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" /> Top Articles
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {analytics?.topArticles?.map((article, i) => (
-                  <div key={article.slug} className="flex justify-between py-2 border-b last:border-0">
-                    <Link href={`/articles/${article.slug}`} className="text-sm hover:text-primary truncate flex-1">
-                      {i + 1}. {article.title}
-                    </Link>
-                    <span className="text-xs text-muted-foreground ml-2">{article.views} views</span>
-                  </div>
-                )) || <p className="text-muted-foreground text-sm">No data</p>}
-              </CardContent>
-            </Card>
+        {canViewAnalytics(role) && (
+          <TabsContent value="overview" className="mt-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5" /> Top Articles
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {analytics?.topArticles?.map((article, i) => (
+                    <div key={article.slug} className="flex justify-between py-2 border-b last:border-0">
+                      <Link href={`/articles/${article.slug}`} className="text-sm hover:text-primary truncate flex-1">
+                        {i + 1}. {article.title}
+                      </Link>
+                      <span className="text-xs text-muted-foreground ml-2">{article.views} views</span>
+                    </div>
+                  )) || <p className="text-muted-foreground text-sm">Koi data nahi</p>}
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FolderOpen className="h-5 w-5" /> Platform Stats
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <div className="flex justify-between"><span>Draft Articles</span><span>{stats?.draftArticles}</span></div>
-                <div className="flex justify-between"><span>Total Comments</span><span>{stats?.totalComments}</span></div>
-                <div className="flex justify-between"><span>Categories</span><span>{stats?.totalCategories}</span></div>
-                <div className="flex justify-between"><span>Total Articles</span><span>{stats?.totalArticles}</span></div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FolderOpen className="h-5 w-5" /> Platform Stats
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                  <div className="flex justify-between"><span>Draft Articles</span><span>{stats?.draftArticles}</span></div>
+                  <div className="flex justify-between"><span>Total Comments</span><span>{stats?.totalComments}</span></div>
+                  <div className="flex justify-between"><span>Categories</span><span>{stats?.totalCategories}</span></div>
+                  <div className="flex justify-between"><span>Total Articles</span><span>{stats?.totalArticles}</span></div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        )}
 
-        <TabsContent value="create" className="mt-6">
-          <ArticleEditor />
-        </TabsContent>
+        {canCreateArticles(role) && (
+          <TabsContent value="create" className="mt-6">
+            <ArticleEditor />
+          </TabsContent>
+        )}
 
-        <TabsContent value="users" className="mt-6">
-          <Card>
-            <CardContent className="p-0">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left p-4">Name</th>
-                    <th className="text-left p-4">Email</th>
-                    <th className="text-left p-4">Role</th>
-                    <th className="text-left p-4">Joined</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((user) => (
-                    <tr key={user.email} className="border-b last:border-0">
-                      <td className="p-4">{user.name}</td>
-                      <td className="p-4 text-muted-foreground">{user.email}</td>
-                      <td className="p-4">
-                        <span className="px-2 py-0.5 rounded-full bg-muted text-xs">{user.role}</span>
-                      </td>
-                      <td className="p-4 text-muted-foreground">
-                        {new Date(user.createdAt).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {canManageCategories(role) && (
+          <TabsContent value="categories" className="mt-6">
+            <CategoryManager />
+          </TabsContent>
+        )}
+
+        {canManageUsers(role) && (
+          <TabsContent value="users" className="mt-6">
+            <UserManager actorRole={role} />
+          </TabsContent>
+        )}
+
+        {canManageTheme(role) && (
+          <TabsContent value="appearance" className="mt-6">
+            <ThemeSettings />
+          </TabsContent>
+        )}
       </Tabs>
+
+      {!canViewAnalytics(role) && canCreateArticles(role) && activeTab === "overview" && (
+        <div className="mt-6 text-center text-muted-foreground">
+          <p>Article likhne ke liye <strong>Article Banao</strong> tab kholo.</p>
+        </div>
+      )}
     </div>
   );
 }

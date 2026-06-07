@@ -1,18 +1,32 @@
 import { z } from "zod";
 
 export const registerSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters").max(50),
-  email: z.string().email("Invalid email address"),
+  name: z.string().min(2, "Naam kam se kam 2 characters ka hona chahiye").max(50),
+  email: z.string().email("Galat email address"),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "Must contain uppercase letter")
-    .regex(/[0-9]/, "Must contain a number"),
+    .min(8, "Password kam se kam 8 characters ka hona chahiye")
+    .regex(/[A-Z]/, "Ek uppercase letter hona chahiye")
+    .regex(/[0-9]/, "Ek number hona chahiye"),
 });
 
 export const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(1, "Password is required"),
+  email: z.string().email("Galat email address"),
+  password: z.string().min(1, "Password zaroori hai"),
+});
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email("Galat email address"),
+  context: z.enum(["user", "admin"]).default("user"),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1, "Reset token zaroori hai"),
+  password: z
+    .string()
+    .min(8, "Password kam se kam 8 characters ka hona chahiye")
+    .regex(/[A-Z]/, "Ek uppercase letter hona chahiye")
+    .regex(/[0-9]/, "Ek number hona chahiye"),
 });
 
 export const articleSchema = z.object({
@@ -23,7 +37,8 @@ export const articleSchema = z.object({
     .max(200)
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Invalid slug format"),
   excerpt: z.string().min(10).max(500),
-  content: z.string().min(50, "Content must be at least 50 characters"),
+  content: z.string().min(20, "Content bahut chhota hai"),
+  contentFormat: z.enum(["markdown", "richtext"]).default("richtext"),
   category: z.string().min(1, "Category is required"),
   tags: z.array(z.string()).max(10).default([]),
   featuredImage: z.string().url().optional().or(z.literal("")),
@@ -42,7 +57,7 @@ export const commentSchema = z.object({
 });
 
 export const newsletterSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().email("Galat email address"),
 });
 
 export const categorySchema = z.object({
@@ -55,6 +70,26 @@ export const categorySchema = z.object({
   description: z.string().max(500).default(""),
   icon: z.string().optional(),
   color: z.string().optional(),
+});
+
+export const adminCreateUserSchema = z.object({
+  name: z.string().min(2, "Naam kam se kam 2 characters ka hona chahiye").max(50),
+  email: z.string().email("Galat email address"),
+  password: z
+    .string()
+    .min(8, "Password kam se kam 8 characters ka hona chahiye")
+    .regex(/[A-Z]/, "Ek uppercase letter hona chahiye")
+    .regex(/[0-9]/, "Ek number hona chahiye"),
+  role: z.enum(["user", "admin", "subadmin", "editor", "author"]),
+});
+
+export const themeSettingsSchema = z.object({
+  primary: z.string().min(3).max(30),
+  primaryForeground: z.string().min(3).max(30).optional(),
+  brand: z.string().min(3).max(30).optional(),
+  ring: z.string().min(3).max(30).optional(),
+  radius: z.string().min(2).max(10).optional(),
+  preset: z.string().max(50).optional(),
 });
 
 export const searchSchema = z.object({

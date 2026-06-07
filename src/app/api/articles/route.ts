@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
   const rateLimitError = await withRateLimit(request);
   if (rateLimitError) return rateLimitError;
 
-  const { session, error } = await withAuth(["admin", "editor"]);
+  const { session, error } = await withAuth(["admin", "subadmin", "editor", "author"]);
   if (error) return error;
 
   try {
@@ -93,7 +93,10 @@ export async function POST(request: NextRequest) {
       return apiError("Category not found", 404);
     }
 
-    const { minutes } = calculateReadingTime(parsed.data.content);
+    const { minutes } = calculateReadingTime(
+      parsed.data.content,
+      parsed.data.contentFormat
+    );
 
     const article = await Article.create({
       ...parsed.data,

@@ -4,7 +4,7 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password?: string;
-  role: "user" | "admin" | "editor";
+  role: "user" | "admin" | "subadmin" | "editor" | "author";
   avatar?: string;
   bookmarks: mongoose.Types.ObjectId[];
   readingHistory: {
@@ -12,6 +12,8 @@ export interface IUser extends Document {
     readAt: Date;
   }[];
   isPremium: boolean;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,7 +25,7 @@ const UserSchema = new Schema<IUser>(
     password: { type: String, select: false },
     role: {
       type: String,
-      enum: ["user", "admin", "editor"],
+      enum: ["user", "admin", "subadmin", "editor", "author"],
       default: "user",
     },
     avatar: { type: String },
@@ -35,6 +37,8 @@ const UserSchema = new Schema<IUser>(
       },
     ],
     isPremium: { type: Boolean, default: false },
+    resetPasswordToken: { type: String, select: false },
+    resetPasswordExpires: { type: Date, select: false },
   },
   { timestamps: true }
 );

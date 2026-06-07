@@ -42,10 +42,10 @@ export function Footer() {
           <div>
             <h4 className="font-semibold mb-4">Platform</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/articles" className="hover:text-primary">All Articles</Link></li>
+              <li><Link href="/articles" className="hover:text-primary">Saare Articles</Link></li>
               <li><Link href="/search" className="hover:text-primary">Search</Link></li>
               <li><Link href="/dashboard" className="hover:text-primary">Dashboard</Link></li>
-              <li><Link href="/register" className="hover:text-primary">Create Account</Link></li>
+              <li><Link href="/register" className="hover:text-primary">Account Banao</Link></li>
             </ul>
           </div>
 
@@ -68,7 +68,7 @@ export function Footer() {
         <Separator className="my-8" />
 
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} {siteConfig.name}. Sab adhikar surakshit.</p>
           <div className="flex gap-4">
             <Link href="/privacy" className="hover:text-primary">Privacy</Link>
             <Link href="/terms" className="hover:text-primary">Terms</Link>

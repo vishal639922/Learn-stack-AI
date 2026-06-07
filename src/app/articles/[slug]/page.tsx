@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import { Clock, Eye, Calendar, Bookmark } from "lucide-react";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
-import { MarkdownRenderer } from "@/components/articles/markdown-renderer";
+import { ArticleContent } from "@/components/articles/article-content";
 import { ShareButtons } from "@/components/articles/share-buttons";
 import { CommentSection } from "@/components/articles/comment-section";
 import { ArticleCard } from "@/components/articles/article-card";
@@ -140,7 +140,7 @@ export default async function ArticlePage({ params }: PageProps) {
                 </span>
               )}
               <span className="flex items-center gap-1">
-                <Clock className="h-4 w-4" /> {article.readingTime} min read
+                <Clock className="h-4 w-4" /> {article.readingTime} min padhne ka time
               </span>
               <span className="flex items-center gap-1">
                 <Eye className="h-4 w-4" /> {formatNumber(article.views + 1)} views
@@ -171,7 +171,10 @@ export default async function ArticlePage({ params }: PageProps) {
 
         <AdSense slot="article-top" className="my-6" />
 
-        <MarkdownRenderer content={article.content} />
+        <ArticleContent
+          content={article.content}
+          contentFormat={article.contentFormat as "markdown" | "richtext" | undefined}
+        />
 
         <AdSense slot="article-bottom" className="my-8" />
 

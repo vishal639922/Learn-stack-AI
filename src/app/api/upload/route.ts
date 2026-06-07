@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
   const rateLimitError = await withRateLimit(request);
   if (rateLimitError) return rateLimitError;
 
-  const { error } = await withAuth(["admin", "editor"]);
+  const { error } = await withAuth(["admin", "subadmin", "editor", "author"]);
   if (error) return error;
 
   try {
