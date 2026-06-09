@@ -2,7 +2,7 @@ export const siteConfig = {
   name: process.env.NEXT_PUBLIC_SITE_NAME || "HingLearn",
   description:
     "AI, Machine Learning, Deep Learning, Computer Science, Research Papers aur Programming ko expert tutorials, notes aur interview prep se seekho.",
-  url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.hinglearn.in",
   ogImage: "/og-default.png",
   links: {
     twitter: "https://twitter.com/hinglearn",

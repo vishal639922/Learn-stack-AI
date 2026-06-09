@@ -20,6 +20,6 @@ export function formatNumber(num: number): string {
 }
 
 export function absoluteUrl(path: string): string {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://www.hinglearn.in";
   return `${base}${path.startsWith("/") ? path : `/${path}`}`;
 }
