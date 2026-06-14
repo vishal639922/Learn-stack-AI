@@ -68,3 +68,7 @@ export function canDeleteArticles(role: string): boolean {
 export function canViewAnalytics(role: string): boolean {
   return role === "admin" || role === "subadmin";
 }
+
+export function canReviewArticles(role: string): boolean {
+  return role === "admin" || role === "subadmin" || role === "editor";
+}

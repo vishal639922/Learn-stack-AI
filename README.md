@@ -33,7 +33,7 @@ Configure `.env.local` with:
 
 - `MONGODB_URI` — MongoDB Atlas connection string
 - `AUTH_SECRET` — Generate with `openssl rand -base64 32`
-- `AUTH_URL` — `http://localhost:3000` (production: your domain)
+- `AUTH_URL` — `https://www.hinglearn.in` (production: your domain)
 - `CLOUDINARY_*` — Cloudinary credentials
 - `ADMIN_EMAIL` — First admin user email
 - `NEXT_PUBLIC_SITE_URL` — Public site URL

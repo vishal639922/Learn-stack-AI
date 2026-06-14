@@ -7,6 +7,7 @@ import Link from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
+import { Table, TableRow, TableCell, TableHeader } from "@tiptap/extension-table";
 import { createLowlight, common } from "lowlight";
 import { McqBlock } from "@/components/editor/extensions/mcq-block";
 
@@ -46,6 +47,10 @@ export function getEditorExtensions(options?: { placeholder?: string }) {
     Underline,
     Highlight,
     TextAlign.configure({ types: ["heading", "paragraph"] }),
+    Table.configure({ resizable: true }),
+    TableRow,
+    TableHeader,
+    TableCell,
     Placeholder.configure({
       placeholder:
         options?.placeholder ||

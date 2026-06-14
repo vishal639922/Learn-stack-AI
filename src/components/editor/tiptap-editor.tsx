@@ -80,13 +80,21 @@ export function TiptapEditor({ content, onChange }: TiptapEditorProps) {
     }
   };
 
+  const handleImportSuccess = useCallback(() => {
+    if (!editor) return;
+    onChange(JSON.stringify(editor.getJSON()));
+  }, [editor, onChange]);
+
   return (
-    <div className="rounded-xl border bg-background overflow-hidden shadow-sm">
-      <EditorToolbar
-        editor={editor}
-        onImageUpload={() => triggerUpload("image")}
-        onDiagramUpload={() => triggerUpload("diagram")}
-      />
+    <div className="rounded-xl border bg-background shadow-sm">
+      <div className="sticky top-16 z-30 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <EditorToolbar
+          editor={editor}
+          onImageUpload={() => triggerUpload("image")}
+          onDiagramUpload={() => triggerUpload("diagram")}
+          onImportSuccess={handleImportSuccess}
+        />
+      </div>
       <EditorContent editor={editor} />
       <input
         ref={imageInputRef}

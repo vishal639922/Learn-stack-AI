@@ -25,14 +25,20 @@ import {
   Redo,
   Braces,
   Network,
+  Table2,
+  Columns3,
+  Rows3,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import DocxImportButton from "./DocxImportButton";
 
 interface EditorToolbarProps {
   editor: Editor | null;
   onImageUpload: () => void;
   onDiagramUpload: () => void;
+  onImportSuccess?: () => void;
 }
 
 function ToolbarButton({
@@ -63,7 +69,12 @@ function ToolbarButton({
   );
 }
 
-export function EditorToolbar({ editor, onImageUpload, onDiagramUpload }: EditorToolbarProps) {
+export function EditorToolbar({
+  editor,
+  onImageUpload,
+  onDiagramUpload,
+  onImportSuccess,
+}: EditorToolbarProps) {
   if (!editor) return null;
 
   const setLink = () => {
@@ -86,8 +97,16 @@ export function EditorToolbar({ editor, onImageUpload, onDiagramUpload }: Editor
     editor.chain().focus().toggleCodeBlock({ language: lang || "javascript" }).run();
   };
 
+  const insertTable = () => {
+    editor
+      .chain()
+      .focus()
+      .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+      .run();
+  };
+
   return (
-    <div className="flex flex-wrap items-center gap-0.5 p-2 border-b bg-muted/30 sticky top-0 z-10">
+    <div className="flex flex-wrap items-center gap-0.5 p-2 bg-muted/30">
       <ToolbarButton onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title="Undo">
         <Undo className="h-4 w-4" />
       </ToolbarButton>
@@ -157,6 +176,37 @@ export function EditorToolbar({ editor, onImageUpload, onDiagramUpload }: Editor
       <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("right").run()} active={editor.isActive({ textAlign: "right" })} title="Align Right">
         <AlignRight className="h-4 w-4" />
       </ToolbarButton>
+
+      <Separator orientation="vertical" className="mx-1 h-6" />
+
+      <ToolbarButton onClick={insertTable} title="Insert Table">
+        <Table2 className="h-4 w-4" />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().addColumnAfter().run()}
+        disabled={!editor.can().addColumnAfter()}
+        title="Add Column"
+      >
+        <Columns3 className="h-4 w-4" />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().addRowAfter().run()}
+        disabled={!editor.can().addRowAfter()}
+        title="Add Row"
+      >
+        <Rows3 className="h-4 w-4" />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().deleteTable().run()}
+        disabled={!editor.can().deleteTable()}
+        title="Delete Table"
+      >
+        <Trash2 className="h-4 w-4 text-destructive" />
+      </ToolbarButton>
+
+      <Separator orientation="vertical" className="mx-1 h-6" />
+
+      <DocxImportButton editor={editor} onImportSuccess={onImportSuccess} />
 
       <Separator orientation="vertical" className="mx-1 h-6" />
 

@@ -54,8 +54,10 @@ export function CategoryManager() {
       .then((r) => r.json())
       .then((data) => {
         if (data.success) setCategories(data.data);
-        setLoading(false);
-      });
+        else setError(data.error || "Categories load nahi ho payi");
+      })
+      .catch(() => setError("Categories load nahi ho payi"))
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {

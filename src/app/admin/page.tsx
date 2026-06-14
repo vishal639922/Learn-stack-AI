@@ -13,6 +13,7 @@ import {
   Eye,
   TrendingUp,
   Palette,
+  CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,12 +22,14 @@ import { ArticleEditor } from "@/components/admin/article-editor";
 import { CategoryManager } from "@/components/admin/category-manager";
 import { UserManager } from "@/components/admin/user-manager";
 import { ThemeSettings } from "@/components/admin/theme-settings";
+import { ArticleReviewManager } from "@/components/admin/article-review-manager";
 import {
   canManageCategories,
   canManageUsers,
   canManageTheme,
   canCreateArticles,
   canViewAnalytics,
+  canReviewArticles,
 } from "@/lib/roles";
 
 interface Analytics {
@@ -125,6 +128,9 @@ export default function AdminPage() {
           {canCreateArticles(role) && (
             <TabsTrigger value="create">Article Banao</TabsTrigger>
           )}
+          {canReviewArticles(role) && (
+            <TabsTrigger value="review">Review Articles</TabsTrigger>
+          )}
           {canManageCategories(role) && (
             <TabsTrigger value="categories">Categories</TabsTrigger>
           )}
@@ -177,6 +183,12 @@ export default function AdminPage() {
         {canCreateArticles(role) && (
           <TabsContent value="create" className="mt-6">
             <ArticleEditor />
+          </TabsContent>
+        )}
+
+        {canReviewArticles(role) && (
+          <TabsContent value="review" className="mt-6">
+            <ArticleReviewManager />
           </TabsContent>
         )}
 

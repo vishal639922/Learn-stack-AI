@@ -7,32 +7,24 @@ export function getStaticCategory(slug: string) {
 }
 
 export async function getCategoryBySlug(slug: string) {
-  const staticCategory = getStaticCategory(slug);
-  if (!staticCategory) return null;
-
   try {
     await connectDB();
     const dbCategory = await Category.findOne({ slug }).lean();
     if (dbCategory) return dbCategory;
-
-    return {
-      _id: slug,
-      name: staticCategory.name,
-      slug: staticCategory.slug,
-      description: staticCategory.description,
-      icon: staticCategory.icon,
-      color: staticCategory.color,
-      articleCount: 0,
-    };
   } catch {
-    return {
-      _id: slug,
-      name: staticCategory.name,
-      slug: staticCategory.slug,
-      description: staticCategory.description,
-      icon: staticCategory.icon,
-      color: staticCategory.color,
-      articleCount: 0,
-    };
+    // Fall through to static defaults when DB is unavailable.
   }
+
+  const staticCategory = getStaticCategory(slug);
+  if (!staticCategory) return null;
+
+  return {
+    _id: slug,
+    name: staticCategory.name,
+    slug: staticCategory.slug,
+    description: staticCategory.description,
+    icon: staticCategory.icon,
+    color: staticCategory.color,
+    articleCount: 0,
+  };
 }

@@ -42,7 +42,7 @@ export const articleSchema = z.object({
   category: z.string().min(1, "Category is required"),
   tags: z.array(z.string()).max(10).default([]),
   featuredImage: z.string().url().optional().or(z.literal("")),
-  status: z.enum(["draft", "published", "archived"]).default("draft"),
+  status: z.enum(["draft", "in_review", "approved", "rejected", "published", "archived"]).default("draft"),
   isFeatured: z.boolean().default(false),
   isSponsored: z.boolean().default(false),
   isPremium: z.boolean().default(false),

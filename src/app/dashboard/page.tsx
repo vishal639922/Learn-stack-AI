@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { connectDB } from "@/lib/mongodb";
+import { Article } from "@/models/Article";
+import { Category } from "@/models/Category";
 import { User } from "@/models/User";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArticleCard, type ArticleCardData } from "@/components/articles/article-card";

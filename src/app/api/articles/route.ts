@@ -104,6 +104,8 @@ export async function POST(request: NextRequest) {
       readingTime: minutes,
       publishedDate:
         parsed.data.status === "published" ? new Date() : undefined,
+      submittedAt:
+        parsed.data.status === "in_review" ? new Date() : undefined,
       updatedDate: new Date(),
     });
 

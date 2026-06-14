@@ -13,7 +13,7 @@ export interface IArticle extends Document {
   author: mongoose.Types.ObjectId;
   views: number;
   readingTime: number;
-  status: "draft" | "published" | "archived";
+  status: "draft" | "in_review" | "approved" | "rejected" | "published" | "archived";
   isFeatured: boolean;
   isSponsored: boolean;
   isPremium: boolean;
@@ -21,6 +21,10 @@ export interface IArticle extends Document {
   updatedDate: Date;
   metaTitle?: string;
   metaDescription?: string;
+  reviewComment?: string;
+  submittedAt?: Date;
+  reviewedAt?: Date;
+  reviewedBy?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -45,7 +49,7 @@ const ArticleSchema = new Schema<IArticle>(
     readingTime: { type: Number, default: 1 },
     status: {
       type: String,
-      enum: ["draft", "published", "archived"],
+      enum: ["draft", "in_review", "approved", "rejected", "published", "archived"],
       default: "draft",
     },
     isFeatured: { type: Boolean, default: false },
@@ -55,11 +59,14 @@ const ArticleSchema = new Schema<IArticle>(
     updatedDate: { type: Date, default: Date.now },
     metaTitle: { type: String },
     metaDescription: { type: String },
+    reviewComment: { type: String },
+    submittedAt: { type: Date },
+    reviewedAt: { type: Date },
+    reviewedBy: { type: Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true }
 );
 
-ArticleSchema.index({ slug: 1 });
 ArticleSchema.index({ status: 1, publishedDate: -1 });
 ArticleSchema.index({ category: 1, status: 1 });
 ArticleSchema.index({ tags: 1 });

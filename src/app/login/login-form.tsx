@@ -29,7 +29,7 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (urlError) {
+    if (urlError && urlError !== "undefined") {
       setError(
         AUTH_ERROR_MESSAGES[urlError] ??
           "Sign in fail ho gaya. Email aur password check karo."

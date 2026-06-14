@@ -10,9 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { DEFAULT_CATEGORIES } from "@/config/categories";
 import { TiptapEditor } from "@/components/editor/tiptap-editor";
-import { Save, Upload, FileText, Settings, ImageIcon } from "lucide-react";
+import { Save, Upload, FileText, Settings, ImageIcon, Eye, Send } from "lucide-react";
+import { ArticleContent } from "@/components/articles/article-content";
 
 interface Category {
   _id: string;
@@ -28,7 +28,9 @@ const EMPTY_DOC = JSON.stringify({
 export function ArticleEditor() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [form, setForm] = useState({
     title: "",
     slug: "",
@@ -37,7 +39,7 @@ export function ArticleEditor() {
     category: "",
     tags: "",
     featuredImage: "",
-    status: "draft" as "draft" | "published",
+    status: "draft" as "draft" | "in_review" | "approved" | "rejected" | "published" | "archived",
     isFeatured: false,
     isSponsored: false,
     metaTitle: "",
@@ -48,19 +50,18 @@ export function ArticleEditor() {
     fetch("/api/categories")
       .then((r) => r.json())
       .then((data) => {
-        if (data.success && data.data.length > 0) {
+        if (data.success && Array.isArray(data.data)) {
           setCategories(data.data);
-          setForm((f) => ({ ...f, category: data.data[0]._id }));
-        } else {
-          setCategories(
-            DEFAULT_CATEGORIES.map((c, i) => ({
-              _id: String(i),
-              name: c.name,
-              slug: c.slug,
-            }))
-          );
+          if (data.data.length > 0) {
+            setForm((f) => ({
+              ...f,
+              category: f.category || data.data[0]._id,
+            }));
+          }
         }
-      });
+      })
+      .catch(() => setCategories([]))
+      .finally(() => setCategoriesLoading(false));
   }, []);
 
   const updateField = (field: string, value: string | boolean) => {
@@ -89,7 +90,7 @@ export function ArticleEditor() {
     e.target.value = "";
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, submitAs: "draft" | "in_review" | "published" = "draft") => {
     e.preventDefault();
     setLoading(true);
 
@@ -99,17 +100,20 @@ export function ArticleEditor() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
+          status: submitAs,
           contentFormat: "richtext",
           tags: form.tags
             .split(",")
             .map((t) => t.trim())
             .filter(Boolean),
+          ...(submitAs === "in_review" ? { submittedAt: new Date() } : {}),
+          ...(submitAs === "published" ? { publishedDate: new Date() } : {}),
         }),
       });
       const data = await res.json();
 
       if (data.success) {
-        router.push(`/articles/${data.data.slug}`);
+        router.push(`/admin`);
         router.refresh();
       } else {
         alert(data.error || "Article banane mein fail ho gaya");
@@ -120,13 +124,25 @@ export function ArticleEditor() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={(e) => handleSubmit(e, form.status as "draft" | "in_review" | "published")} className="space-y-6">
       <div className="grid lg:grid-cols-[1fr_340px] gap-6 items-start">
         {/* Main editor column */}
         <div className="space-y-4">
-          <div className="flex items-center gap-2 text-muted-foreground text-sm">
-            <FileText className="h-4 w-4" />
-            Content Editor — GeeksforGeeks style formatting
+          <div className="flex items-center justify-between gap-2 text-muted-foreground text-sm">
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Content Editor — GeeksforGeeks style formatting
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowPreview(!showPreview)}
+              className="gap-2"
+            >
+              <Eye className="h-4 w-4" />
+              {showPreview ? "Edit Mode" : "Preview"}
+            </Button>
           </div>
 
           <div className="space-y-2">
@@ -139,10 +155,31 @@ export function ArticleEditor() {
             />
           </div>
 
-          <TiptapEditor
-            content={form.content}
-            onChange={(json) => updateField("content", json)}
-          />
+          {showPreview ? (
+            <Card className="p-6">
+              <h1 className="text-3xl font-bold mb-4">{form.title || "Article Title"}</h1>
+              <p className="text-muted-foreground mb-6">{form.excerpt || "Article excerpt..."}</p>
+              {form.featuredImage && (
+                <div className="relative h-64 rounded-lg overflow-hidden mb-6">
+                  <Image
+                    src={form.featuredImage}
+                    alt="Featured"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              )}
+              <ArticleContent
+                content={form.content}
+                contentFormat="richtext"
+              />
+            </Card>
+          ) : (
+            <TiptapEditor
+              content={form.content}
+              onChange={(json) => updateField("content", json)}
+            />
+          )}
         </div>
 
         {/* Settings sidebar */}
@@ -181,18 +218,26 @@ export function ArticleEditor() {
 
               <div className="space-y-2">
                 <Label className="text-xs">Category</Label>
-                <select
-                  value={form.category}
-                  onChange={(e) => updateField("category", e.target.value)}
-                  className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
-                  required
-                >
-                  {categories.map((cat) => (
-                    <option key={cat._id} value={cat._id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
+                {categoriesLoading ? (
+                  <p className="text-xs text-muted-foreground">Categories load ho rahi hain...</p>
+                ) : categories.length === 0 ? (
+                  <p className="text-xs text-destructive">
+                    Pehle Admin panel se ek category banao, phir article save karo.
+                  </p>
+                ) : (
+                  <select
+                    value={form.category}
+                    onChange={(e) => updateField("category", e.target.value)}
+                    className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
+                    required
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat._id} value={cat._id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -213,7 +258,11 @@ export function ArticleEditor() {
                   className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
                 >
                   <option value="draft">Draft</option>
+                  <option value="in_review">In Review</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
                   <option value="published">Published</option>
+                  <option value="archived">Archived</option>
                 </select>
               </div>
 
@@ -283,10 +332,36 @@ export function ArticleEditor() {
                 </label>
               </div>
 
-              <Button type="submit" disabled={loading} className="w-full gap-2">
-                <Save className="h-4 w-4" />
-                {loading ? "Save ho raha hai..." : "Article Publish Karo"}
-              </Button>
+              <div className="flex flex-col gap-2">
+                <Button
+                  type="button"
+                  disabled={loading || categories.length === 0}
+                  onClick={(e) => handleSubmit(e as any, "draft")}
+                  variant="outline"
+                  className="w-full gap-2"
+                >
+                  <Save className="h-4 w-4" />
+                  {loading ? "Saving..." : "Save as Draft"}
+                </Button>
+                <Button
+                  type="button"
+                  disabled={loading || categories.length === 0}
+                  onClick={(e) => handleSubmit(e as any, "in_review")}
+                  className="w-full gap-2"
+                >
+                  <Send className="h-4 w-4" />
+                  {loading ? "Submitting..." : "Submit for Review"}
+                </Button>
+                <Button
+                  type="button"
+                  disabled={loading || categories.length === 0}
+                  onClick={(e) => handleSubmit(e as any, "published")}
+                  className="w-full gap-2"
+                >
+                  <Save className="h-4 w-4" />
+                  {loading ? "Publishing..." : "Publish Now"}
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
