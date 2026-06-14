@@ -80,10 +80,43 @@ export async function getRelatedArticles(
     })
       .populate("author", "name avatar")
       .populate("category", "name slug")
-      .sort({ views: -1 })
+      .sort({ sortOrder: 1, publishedDate: -1 })
       .limit(limit)
       .lean()) as unknown as ArticleCardData[];
   } catch {
     return [];
+  }
+}
+
+export async function getCategoryArticles(
+  categoryId: string,
+  options: { page?: number; limit?: number; status?: string } = {}
+) {
+  const { page = 1, limit = 50, status = "published" } = options;
+  const skip = (page - 1) * limit;
+
+  try {
+    await connectDB();
+    const filter: Record<string, unknown> = { category: categoryId };
+    if (status !== "all") filter.status = status;
+
+    const [articles, total] = await Promise.all([
+      Article.find(filter)
+        .populate("author", "name avatar")
+        .populate("category", "name slug")
+        .sort({ sortOrder: 1, publishedDate: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Article.countDocuments(filter),
+    ]);
+
+    return {
+      articles: articles as unknown as ArticleCardData[],
+      total,
+      totalPages: Math.ceil(total / limit),
+    };
+  } catch {
+    return { articles: [], total: 0, totalPages: 0 };
   }
 }

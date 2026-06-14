@@ -24,7 +24,12 @@ export async function GET(
     const { slug } = await params;
     await connectDB();
 
-    const article = await Article.findOne({ slug, status: "published" })
+    const { session } = await withAuth(["admin", "subadmin", "editor", "author"]);
+    const isStaff = !!session;
+
+    const article = await Article.findOne(
+      isStaff ? { slug } : { slug, status: "published" }
+    )
       .populate("author", "name avatar email")
       .populate("category", "name slug")
       .lean();
@@ -33,7 +38,9 @@ export async function GET(
       return apiError("Article not found", 404);
     }
 
-    await Article.findByIdAndUpdate(article._id, { $inc: { views: 1 } });
+    if (!isStaff) {
+      await Article.findByIdAndUpdate(article._id, { $inc: { views: 1 } });
+    }
 
     const related = await Article.find({
       _id: { $ne: article._id },
@@ -42,11 +49,14 @@ export async function GET(
     })
       .populate("author", "name avatar")
       .populate("category", "name slug")
-      .sort({ views: -1 })
+      .sort({ sortOrder: 1, publishedDate: -1 })
       .limit(4)
       .lean();
 
-    return apiResponse({ article: { ...article, views: article.views + 1 }, related });
+    return apiResponse({
+      article: isStaff ? article : { ...article, views: article.views + 1 },
+      related,
+    });
   } catch {
     return apiError("Failed to fetch article", 500);
   }
@@ -116,7 +126,7 @@ export async function DELETE(
   const rateLimitError = await withRateLimit(request);
   if (rateLimitError) return rateLimitError;
 
-  const { error } = await withAuth(["admin"]);
+  const { error } = await withAuth(["admin", "subadmin", "editor"]);
   if (error) return error;
 
   try {

@@ -17,6 +17,7 @@ export interface IArticle extends Document {
   isFeatured: boolean;
   isSponsored: boolean;
   isPremium: boolean;
+  sortOrder: number;
   publishedDate?: Date;
   updatedDate: Date;
   metaTitle?: string;
@@ -55,6 +56,7 @@ const ArticleSchema = new Schema<IArticle>(
     isFeatured: { type: Boolean, default: false },
     isSponsored: { type: Boolean, default: false },
     isPremium: { type: Boolean, default: false },
+    sortOrder: { type: Number, default: 0 },
     publishedDate: { type: Date },
     updatedDate: { type: Date, default: Date.now },
     metaTitle: { type: String },
@@ -67,8 +69,8 @@ const ArticleSchema = new Schema<IArticle>(
   { timestamps: true }
 );
 
+ArticleSchema.index({ category: 1, status: 1, sortOrder: 1 });
 ArticleSchema.index({ status: 1, publishedDate: -1 });
-ArticleSchema.index({ category: 1, status: 1 });
 ArticleSchema.index({ tags: 1 });
 ArticleSchema.index({ views: -1 });
 ArticleSchema.index(

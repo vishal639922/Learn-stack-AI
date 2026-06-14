@@ -35,7 +35,7 @@ export function ArticleReviewManager() {
 
   const fetchArticles = async () => {
     try {
-      const res = await fetch("/api/articles?status=in_review&limit=50");
+      const res = await fetch("/api/admin/articles?status=in_review&limit=50");
       const data = await res.json();
       if (data.success) {
         setArticles(data.data.articles || []);

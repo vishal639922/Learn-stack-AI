@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import slugify from "slugify";
-import { Plus, FolderOpen, Trash2 } from "lucide-react";
+import { Plus, FolderOpen, Trash2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -215,6 +216,13 @@ export function CategoryManager() {
                     /{cat.slug} · {cat.articleCount || 0} articles
                   </p>
                 </div>
+                <Link
+                  href={`/categories/${cat.slug}`}
+                  className="text-xs text-primary hover:underline shrink-0 hidden sm:inline"
+                  title="Topic page"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </Link>
                 <Button
                   type="button"
                   variant="ghost"

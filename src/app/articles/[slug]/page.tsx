@@ -5,12 +5,14 @@ import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { ArticleContent } from "@/components/articles/article-content";
 import { ShareButtons } from "@/components/articles/share-buttons";
 import { CommentSection } from "@/components/articles/comment-section";
+import { CategoryTopicSidebar } from "@/components/articles/category-topic-sidebar";
+import { TopicArticleList } from "@/components/articles/topic-article-list";
 import { ArticleCard } from "@/components/articles/article-card";
 import { Badge } from "@/components/ui/badge";
 import { AdSense } from "@/components/ads/adsense";
 import { BookmarkButton } from "@/components/articles/bookmark-button";
 import { ReadingHistoryTracker } from "@/components/articles/reading-history-tracker";
-import { getArticleBySlug, getRelatedArticles } from "@/lib/data/articles";
+import { getArticleBySlug, getCategoryArticles } from "@/lib/data/articles";
 import { connectDB } from "@/lib/mongodb";
 import { Comment } from "@/models/Comment";
 import { Article } from "@/models/Article";
@@ -64,13 +66,17 @@ export default async function ArticlePage({ params }: PageProps) {
       ? String((article.category as { _id: unknown })._id)
       : String(article.category);
 
-  const [related, comments] = await Promise.all([
-    getRelatedArticles(categoryId, article._id.toString()),
+  const [categoryArticles, comments] = await Promise.all([
+    getCategoryArticles(categoryId, { limit: 100 }),
     Comment.find({ articleId: article._id, isApproved: true })
       .populate("userId", "name avatar")
       .sort({ createdAt: -1 })
       .lean(),
   ]);
+
+  const topicArticles = categoryArticles.articles.filter(
+    (a) => a._id !== article._id.toString()
+  );
 
   const jsonLd = articleJsonLd({
     title: article.title,
@@ -101,7 +107,16 @@ export default async function ArticlePage({ params }: PageProps) {
 
       <ReadingHistoryTracker articleId={article._id.toString()} />
 
-      <article className="container mx-auto px-4 py-8 max-w-5xl">
+      <article className="container mx-auto px-4 py-8">
+        <div className="flex gap-8 max-w-6xl mx-auto">
+          <CategoryTopicSidebar
+            categoryName={category?.name || "Category"}
+            categorySlug={category?.slug || ""}
+            articles={categoryArticles.articles}
+            activeSlug={slug}
+          />
+
+          <div className="flex-1 min-w-0 max-w-3xl">
         <Breadcrumbs
           items={[
             { label: "Articles", href: "/articles" },
@@ -184,16 +199,27 @@ export default async function ArticlePage({ params }: PageProps) {
           isLoggedIn={!!session}
         />
 
-        {related.length > 0 && (
-          <section className="mt-16 pt-8 border-t">
-            <h2 className="text-2xl font-bold mb-6">Related Articles</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              {related.map((rel) => (
-                <ArticleCard key={rel._id} article={rel} />
+        {topicArticles.length > 0 && (
+          <section className="mt-16 pt-8 border-t lg:hidden">
+            <h2 className="text-xl font-bold mb-4">
+              More in {category?.name}
+            </h2>
+            <TopicArticleList articles={topicArticles} activeSlug={slug} />
+          </section>
+        )}
+
+        {topicArticles.length > 0 && (
+          <section className="mt-16 pt-8 border-t hidden lg:block">
+            <h2 className="text-2xl font-bold mb-6">Related in this topic</h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              {topicArticles.slice(0, 4).map((rel) => (
+                <ArticleCard key={rel._id} article={rel} variant="compact" />
               ))}
             </div>
           </section>
         )}
+          </div>
+        </div>
       </article>
     </>
   );

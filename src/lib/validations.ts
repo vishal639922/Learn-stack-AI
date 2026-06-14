@@ -48,6 +48,7 @@ export const articleSchema = z.object({
   isPremium: z.boolean().default(false),
   metaTitle: z.string().max(70).optional(),
   metaDescription: z.string().max(160).optional(),
+  sortOrder: z.coerce.number().int().min(0).default(0),
 });
 
 export const commentSchema = z.object({
@@ -98,6 +99,12 @@ export const searchSchema = z.object({
   tags: z.string().optional(),
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(50).default(12),
+});
+
+export const adminArticleSearchSchema = searchSchema.extend({
+  status: z
+    .enum(["draft", "in_review", "approved", "rejected", "published", "archived", "all"])
+    .default("all"),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;

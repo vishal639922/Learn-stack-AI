@@ -1,13 +1,15 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { connectDB } from "@/lib/mongodb";
 import { Category } from "@/models/Category";
 import { Article } from "@/models/Article";
-import { ArticleCard } from "@/components/articles/article-card";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
+import { TopicArticleList } from "@/components/articles/topic-article-list";
+import { CategoryIcon } from "@/components/categories/category-icon";
 import { generateSEO } from "@/lib/seo";
 import { getCategoryBySlug } from "@/lib/data/categories";
+import { getCategoryArticles } from "@/lib/data/articles";
 import { ensureDevSeed } from "@/lib/dev-seed";
-import type { ArticleCardData } from "@/components/articles/article-card";
 
 export const revalidate = 3600;
 
@@ -34,42 +36,30 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   const { slug } = await params;
   const { page: pageStr } = await searchParams;
   const page = parseInt(pageStr || "1");
-  const limit = 12;
-  const skip = (page - 1) * limit;
+  const limit = 50;
 
   const category = await getCategoryBySlug(slug);
   if (!category) notFound();
 
-  let articles: ArticleCardData[] = [];
-  let total = 0;
+  let articles: Awaited<ReturnType<typeof getCategoryArticles>>["articles"] = [];
+  let totalPages = 0;
 
   try {
     await connectDB();
     const dbCategory = await Category.findOne({ slug }).lean();
 
     if (dbCategory) {
-      const [articleResults, articleTotal] = await Promise.all([
-        Article.find({ category: dbCategory._id, status: "published" })
-          .populate("author", "name avatar")
-          .populate("category", "name slug")
-          .sort({ publishedDate: -1 })
-          .skip(skip)
-          .limit(limit)
-          .lean(),
-        Article.countDocuments({
-          category: dbCategory._id,
-          status: "published",
-        }),
-      ]);
-      articles = articleResults as unknown as ArticleCardData[];
-      total = articleTotal;
+      const result = await getCategoryArticles(dbCategory._id.toString(), {
+        page,
+        limit,
+        status: "published",
+      });
+      articles = result.articles;
+      totalPages = result.totalPages;
     }
   } catch {
     articles = [];
-    total = 0;
   }
-
-  const totalPages = Math.ceil(total / limit);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -79,21 +69,38 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
           { label: category.name },
         ]}
       />
-      <h1 className="text-3xl font-bold mb-2">{category.name}</h1>
-      <p className="text-muted-foreground mb-8">{category.description}</p>
+
+      <div className="flex items-start gap-4 mb-8">
+        <div
+          className={`w-14 h-14 rounded-xl bg-gradient-to-br ${category.color || "from-primary to-primary/70"} flex items-center justify-center shrink-0`}
+        >
+          <CategoryIcon name={category.icon} className="h-7 w-7 text-white" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold mb-2">{category.name}</h1>
+          <p className="text-muted-foreground max-w-2xl">{category.description}</p>
+          <p className="text-sm text-muted-foreground mt-2">
+            {articles.length} topic articles · GFG-style ordered list
+          </p>
+        </div>
+      </div>
 
       {articles.length > 0 ? (
         <>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {articles.map((article) => (
-              <ArticleCard key={article._id} article={article} />
-            ))}
+          <div className="rounded-xl border bg-card p-4 md:p-6">
+            <h2 className="text-lg font-semibold mb-4">
+              {category.name} — Articles
+            </h2>
+            <TopicArticleList
+              articles={articles}
+              startIndex={(page - 1) * limit + 1}
+            />
           </div>
 
           {totalPages > 1 && (
-            <div className="flex justify-center gap-2 mt-12">
+            <div className="flex justify-center gap-2 mt-8">
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                <a
+                <Link
                   key={p}
                   href={`/categories/${slug}?page=${p}`}
                   className={`px-4 py-2 rounded-md text-sm font-medium ${
@@ -103,15 +110,20 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                   }`}
                 >
                   {p}
-                </a>
+                </Link>
               ))}
             </div>
           )}
         </>
       ) : (
-        <p className="text-muted-foreground text-center py-16">
-          Is category mein abhi koi article nahi hai.
-        </p>
+        <div className="rounded-xl border bg-muted/20 p-12 text-center">
+          <p className="text-muted-foreground">
+            Is topic mein abhi koi published article nahi hai.
+          </p>
+          <Link href="/articles" className="text-primary hover:underline text-sm mt-2 inline-block">
+            Saare articles dekho
+          </Link>
+        </div>
       )}
     </div>
   );

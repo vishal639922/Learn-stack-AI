@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArticleEditor } from "@/components/admin/article-editor";
+import { ArticleListManager } from "@/components/admin/article-list-manager";
 import { CategoryManager } from "@/components/admin/category-manager";
 import { UserManager } from "@/components/admin/user-manager";
 import { ThemeSettings } from "@/components/admin/theme-settings";
@@ -28,6 +29,7 @@ import {
   canManageUsers,
   canManageTheme,
   canCreateArticles,
+  canEditAnyArticle,
   canViewAnalytics,
   canReviewArticles,
 } from "@/lib/roles";
@@ -53,6 +55,7 @@ export default function AdminPage() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
+  const [editingSlug, setEditingSlug] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -93,7 +96,12 @@ export default function AdminPage() {
           </div>
         </div>
         {canCreateArticles(role) && (
-          <Button onClick={() => setActiveTab("create")}>
+          <Button
+            onClick={() => {
+              setEditingSlug(null);
+              setActiveTab("create");
+            }}
+          >
             <Plus className="h-4 w-4 mr-2" /> Naya Article
           </Button>
         )}
@@ -126,7 +134,12 @@ export default function AdminPage() {
             <TabsTrigger value="overview">Overview</TabsTrigger>
           )}
           {canCreateArticles(role) && (
-            <TabsTrigger value="create">Article Banao</TabsTrigger>
+            <TabsTrigger value="create">
+              {editingSlug ? "Edit Article" : "Article Banao"}
+            </TabsTrigger>
+          )}
+          {canEditAnyArticle(role) && (
+            <TabsTrigger value="manage">Manage Articles</TabsTrigger>
           )}
           {canReviewArticles(role) && (
             <TabsTrigger value="review">Review Articles</TabsTrigger>
@@ -182,7 +195,30 @@ export default function AdminPage() {
 
         {canCreateArticles(role) && (
           <TabsContent value="create" className="mt-6">
-            <ArticleEditor />
+            <ArticleEditor
+              editSlug={editingSlug}
+              role={role}
+              onCancelEdit={() => {
+                setEditingSlug(null);
+                setActiveTab(canEditAnyArticle(role) ? "manage" : "create");
+              }}
+              onSaved={() => {
+                setEditingSlug(null);
+                setActiveTab(canEditAnyArticle(role) ? "manage" : "create");
+              }}
+            />
+          </TabsContent>
+        )}
+
+        {canEditAnyArticle(role) && (
+          <TabsContent value="manage" className="mt-6">
+            <ArticleListManager
+              role={role}
+              onEdit={(slug) => {
+                setEditingSlug(slug);
+                setActiveTab("create");
+              }}
+            />
           </TabsContent>
         )}
 

@@ -11,8 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { TiptapEditor } from "@/components/editor/tiptap-editor";
-import { Save, Upload, FileText, Settings, ImageIcon, Eye, Send } from "lucide-react";
+import { Save, Upload, FileText, Settings, ImageIcon, Eye, Send, Trash2, ArrowLeft } from "lucide-react";
 import { ArticleContent } from "@/components/articles/article-content";
+import { canDeleteArticles } from "@/lib/roles";
 
 interface Category {
   _id: string;
@@ -25,12 +26,27 @@ const EMPTY_DOC = JSON.stringify({
   content: [{ type: "paragraph" }],
 });
 
-export function ArticleEditor() {
+interface ArticleEditorProps {
+  editSlug?: string | null;
+  role?: string;
+  onCancelEdit?: () => void;
+  onSaved?: () => void;
+}
+
+export function ArticleEditor({
+  editSlug = null,
+  role = "",
+  onCancelEdit,
+  onSaved,
+}: ArticleEditorProps) {
   const router = useRouter();
+  const isEditing = Boolean(editSlug);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [articleLoading, setArticleLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [originalSlug, setOriginalSlug] = useState("");
   const [form, setForm] = useState({
     title: "",
     slug: "",
@@ -39,6 +55,7 @@ export function ArticleEditor() {
     category: "",
     tags: "",
     featuredImage: "",
+    sortOrder: 0,
     status: "draft" as "draft" | "in_review" | "approved" | "rejected" | "published" | "archived",
     isFeatured: false,
     isSponsored: false,
@@ -52,7 +69,7 @@ export function ArticleEditor() {
       .then((data) => {
         if (data.success && Array.isArray(data.data)) {
           setCategories(data.data);
-          if (data.data.length > 0) {
+          if (!isEditing && data.data.length > 0) {
             setForm((f) => ({
               ...f,
               category: f.category || data.data[0]._id,
@@ -62,12 +79,65 @@ export function ArticleEditor() {
       })
       .catch(() => setCategories([]))
       .finally(() => setCategoriesLoading(false));
-  }, []);
+  }, [isEditing]);
 
-  const updateField = (field: string, value: string | boolean) => {
+  useEffect(() => {
+    if (!editSlug) {
+      setOriginalSlug("");
+      setForm({
+        title: "",
+        slug: "",
+        excerpt: "",
+        content: EMPTY_DOC,
+        category: categories[0]?._id || "",
+        tags: "",
+        featuredImage: "",
+        sortOrder: 0,
+        status: "draft",
+        isFeatured: false,
+        isSponsored: false,
+        metaTitle: "",
+        metaDescription: "",
+      });
+      return;
+    }
+
+    setArticleLoading(true);
+    fetch(`/api/articles/${editSlug}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.success) {
+          alert(data.error || "Article load nahi ho paya");
+          onCancelEdit?.();
+          return;
+        }
+
+        const article = data.data.article;
+        setOriginalSlug(article.slug);
+        setForm({
+          title: article.title || "",
+          slug: article.slug || "",
+          excerpt: article.excerpt || "",
+          content: article.content || EMPTY_DOC,
+          category: article.category?._id || article.category || "",
+          tags: Array.isArray(article.tags) ? article.tags.join(", ") : "",
+          featuredImage: article.featuredImage || "",
+          sortOrder: article.sortOrder ?? 0,
+          status: article.status || "draft",
+          isFeatured: article.isFeatured || false,
+          isSponsored: article.isSponsored || false,
+          metaTitle: article.metaTitle || "",
+          metaDescription: article.metaDescription || "",
+        });
+      })
+      .catch(() => alert("Article load nahi ho paya"))
+      .finally(() => setArticleLoading(false));
+  }, [editSlug, categories, onCancelEdit]);
+
+  const updateField = (field: string, value: string | boolean | number) => {
     setForm((prev) => {
       const updated = { ...prev, [field]: value };
-      if (field === "title" && typeof value === "string") {
+      if (!isEditing && field === "title" && typeof value === "string") {
         updated.slug = slugify(value, { lower: true, strict: true });
       }
       return updated;
@@ -90,48 +160,96 @@ export function ArticleEditor() {
     e.target.value = "";
   };
 
-  const handleSubmit = async (e: React.FormEvent, submitAs: "draft" | "in_review" | "published" = "draft") => {
+  const buildPayload = (submitAs: typeof form.status) => ({
+    ...form,
+    status: submitAs,
+    contentFormat: "richtext" as const,
+    tags: form.tags
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean),
+    sortOrder: Number(form.sortOrder) || 0,
+    ...(submitAs === "in_review" ? { submittedAt: new Date() } : {}),
+    ...(submitAs === "published" ? { publishedDate: new Date() } : {}),
+  });
+
+  const handleSubmit = async (
+    e: React.FormEvent,
+    submitAs: "draft" | "in_review" | "published" = "draft"
+  ) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const res = await fetch("/api/articles", {
-        method: "POST",
+      const url = isEditing ? `/api/articles/${originalSlug}` : "/api/articles";
+      const method = isEditing ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          status: submitAs,
-          contentFormat: "richtext",
-          tags: form.tags
-            .split(",")
-            .map((t) => t.trim())
-            .filter(Boolean),
-          ...(submitAs === "in_review" ? { submittedAt: new Date() } : {}),
-          ...(submitAs === "published" ? { publishedDate: new Date() } : {}),
-        }),
+        body: JSON.stringify(buildPayload(submitAs)),
       });
       const data = await res.json();
 
       if (data.success) {
-        router.push(`/admin`);
-        router.refresh();
+        onSaved?.();
+        if (!onSaved) {
+          router.push("/admin");
+          router.refresh();
+        }
       } else {
-        alert(data.error || "Article banane mein fail ho gaya");
+        alert(data.error || "Save fail ho gaya");
       }
     } finally {
       setLoading(false);
     }
   };
 
+  const handleDelete = async () => {
+    if (!isEditing || !originalSlug) return;
+    if (!confirm(`"${form.title}" permanently delete karna hai?`)) return;
+
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/articles/${originalSlug}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        onSaved?.();
+        onCancelEdit?.();
+      } else {
+        alert(data.error || "Delete fail ho gaya");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (articleLoading) {
+    return (
+      <p className="text-muted-foreground text-center py-12">
+        Article load ho raha hai...
+      </p>
+    );
+  }
+
   return (
     <form onSubmit={(e) => handleSubmit(e, form.status as "draft" | "in_review" | "published")} className="space-y-6">
+      {isEditing && (
+        <div className="flex items-center justify-between gap-3">
+          <Button type="button" variant="outline" size="sm" onClick={onCancelEdit} className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Wapas list par
+          </Button>
+          <p className="text-sm text-muted-foreground">Article edit ho raha hai</p>
+        </div>
+      )}
+
       <div className="grid lg:grid-cols-[1fr_340px] gap-6 items-start">
-        {/* Main editor column */}
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-2 text-muted-foreground text-sm">
             <div className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
-              Content Editor — GeeksforGeeks style formatting
+              {isEditing ? "Edit Article" : "Content Editor"} — topic-wise category se linked
             </div>
             <Button
               type="button"
@@ -182,7 +300,6 @@ export function ArticleEditor() {
           )}
         </div>
 
-        {/* Settings sidebar */}
         <div className="space-y-4 lg:sticky lg:top-20">
           <Card>
             <CardHeader className="pb-3">
@@ -217,7 +334,7 @@ export function ArticleEditor() {
               <Separator />
 
               <div className="space-y-2">
-                <Label className="text-xs">Category</Label>
+                <Label className="text-xs">Topic / Category</Label>
                 {categoriesLoading ? (
                   <p className="text-xs text-muted-foreground">Categories load ho rahi hain...</p>
                 ) : categories.length === 0 ? (
@@ -238,6 +355,20 @@ export function ArticleEditor() {
                     ))}
                   </select>
                 )}
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs">Topic Order (GFG list mein position)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.sortOrder}
+                  onChange={(e) => updateField("sortOrder", parseInt(e.target.value, 10) || 0)}
+                  className="text-sm"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Chhota number = category page par upar dikhega
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -336,17 +467,17 @@ export function ArticleEditor() {
                 <Button
                   type="button"
                   disabled={loading || categories.length === 0}
-                  onClick={(e) => handleSubmit(e as any, "draft")}
+                  onClick={(e) => handleSubmit(e as React.FormEvent, "draft")}
                   variant="outline"
                   className="w-full gap-2"
                 >
                   <Save className="h-4 w-4" />
-                  {loading ? "Saving..." : "Save as Draft"}
+                  {loading ? "Saving..." : isEditing ? "Update Draft" : "Save as Draft"}
                 </Button>
                 <Button
                   type="button"
                   disabled={loading || categories.length === 0}
-                  onClick={(e) => handleSubmit(e as any, "in_review")}
+                  onClick={(e) => handleSubmit(e as React.FormEvent, "in_review")}
                   className="w-full gap-2"
                 >
                   <Send className="h-4 w-4" />
@@ -355,25 +486,25 @@ export function ArticleEditor() {
                 <Button
                   type="button"
                   disabled={loading || categories.length === 0}
-                  onClick={(e) => handleSubmit(e as any, "published")}
+                  onClick={(e) => handleSubmit(e as React.FormEvent, "published")}
                   className="w-full gap-2"
                 >
                   <Save className="h-4 w-4" />
-                  {loading ? "Publishing..." : "Publish Now"}
+                  {loading ? "Publishing..." : isEditing ? "Update & Publish" : "Publish Now"}
                 </Button>
+                {isEditing && canDeleteArticles(role) && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    disabled={loading}
+                    onClick={handleDelete}
+                    className="w-full gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete Article
+                  </Button>
+                )}
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-muted/30">
-            <CardContent className="p-4 text-xs text-muted-foreground space-y-2">
-              <p className="font-medium text-foreground">Editor Tips:</p>
-              <ul className="list-disc pl-4 space-y-1">
-                <li><strong>Code Block</strong> — syntax highlighted code</li>
-                <li><strong>Image</strong> — inline images upload</li>
-                <li><strong>Diagram</strong> — flowcharts/diagrams as image</li>
-                <li><strong>MCQ</strong> — practice questions with answers</li>
-              </ul>
             </CardContent>
           </Card>
         </div>
